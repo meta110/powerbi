@@ -1,4 +1,4 @@
-// код этой функции находится по адресу http://bit.ly/raw_metrika_hse
+// свежую версию этой функции можно скачать по адресу http://bit.ly/raw_metrika_hse
 // 1. создать цифровой параметр counter, в который записать номер счетчика Яндекс.Метрики
 // 2. создать текстовый параметр tokenYandexMetrika, в который записать ключ (токен) доступа к Яндекс.Метрике
 // для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
@@ -199,5 +199,3 @@ in
 	] 
 in
     Value.ReplaceType(RAW_METRIKA, fnType)
-//in
-//RAW_METRIKA
