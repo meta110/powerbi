@@ -1,6 +1,7 @@
 // свежую версию этой функции можно скачать по адресу http://bit.ly/raw_metrika_hse
 // создать пустой запрос с именем RAW_METRIKA_API и вставить в него указанный код
 // для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
+// функция может получать ответ достаточно долго (несколько минут) - это нормально для сырых данных. Уменьшите период времени или 
 let
 RAW_METRIKA = (counter as number, token as text, dateFrom as date, dateTo as date, optional fields as text) =>
 
@@ -27,8 +28,8 @@ let
                 fields = Text.Replace(fields," ", ""),
                 source = "visits"
             ],
-			ManualStatusHandling = {400, 404},
-            Content = Json.FromValue("[]")  // пустышка, чтобы запрос превратился в POST                  
+			ManualStatusHandling = {400},
+            Content = Json.FromValue("[]")  // пустышка, чтобы GET-запрос превратился в POST                  
         ]
     ),
     metadata = Value.Metadata(Source),
@@ -41,8 +42,7 @@ let
 			"https://api-metrika.yandex.net/management/v1/counter/", [
 				Headers = Headers,
 				IsRetry = IsRetry,
-				RelativePath = RelativePath
-				//Content = Json.FromValue("[]")  // пустышка, чтобы запрос превратился в POST                  
+				RelativePath = RelativePath               
 			]
 		),
 		metadata3 = Value.Metadata(Source3),
@@ -129,7 +129,6 @@ let
 	)
 	
 in
-    //requests_list
 	if metadata[Response.Status] = 400 then
 		result[errors]{0}
     else
