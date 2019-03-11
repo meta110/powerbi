@@ -1,17 +1,14 @@
 // свежую версию этой функции можно скачать по адресу http://bit.ly/raw_metrika_hse
-// 1. создать цифровой параметр counter, в который записать номер счетчика Яндекс.Метрики
-// 2. создать текстовый параметр tokenYandexMetrika, в который записать ключ (токен) доступа к Яндекс.Метрике
+// создать пустой запрос с именем RAW_METRIKA_API и вставить в него указанный код
 // для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
-// 3. создать пустой запрос с именем RAW_METRIKA_API и вставить в него указанный код
 let
-RAW_METRIKA = (dateFrom as date, dateTo as date, optional fields as text) =>
+RAW_METRIKA = (counter as number, token as text, dateFrom as date, dateTo as date, optional fields as text) =>
 
 let
-
 	counter = Text.From(counter),
     
     header_metrika_auth = [
-        #"Authorization" = "OAuth " & tokenYandexMetrika,
+        #"Authorization" = "OAuth " & token,
         #"Content-Type" = "application/x-yametrika+json"
     ],
 	
@@ -38,9 +35,6 @@ let
     result = Json.Document(Source),
 	request_id = result[log_request][request_id],
 	
-	//информация о запросе логов
-	//request_id = 2054024, //
-
 	LogRequest.Get = (Headers as record, RelativePath as text, IsRetry as logical) =>
 	let
 		Source3 = Web.Contents(
@@ -110,28 +104,6 @@ let
 				wait4data[time]
 			),
 
-/*	
-	// список всех запросов логов
-    Source2 = Web.Contents(
-        "https://api-metrika.yandex.net/management/v1/counter/" & counter & "/logrequests", [
-            Headers = header_metrika_auth//,
-			//RelativePath = Text.From(request_id)
-            //Content = Json.FromValue("[]")  // пустышка, чтобы запрос превратился в POST                  
-        ]
-    ),
-    metadata2 = Value.Metadata(Source2),
-    result2 = Json.Document(Source2),
-	requests_list = result2[requests]
-*/	
-	//Статусы запросов
-	//processed — обработан.
-    //canceled — отменён.
-    //processing_failed — ошибка при обработке.
-    //created — создан.
-    //cleaned_by_user — очищен пользователем.
-    //cleaned_automatically_as_too_old — очищен автоматически.
-		
-
 	//распаковываю отчет
 	parts = Table.AddColumn(
 		Table.FromRecords(AddTime[parts]), 
@@ -165,6 +137,18 @@ in
 		
 	yesterday = Date.AddDays(DateTime.Date(DateTime.LocalNow()),-1),	
 	fnType = type function(
+        counter as (type number 
+			meta [
+				Documentation.FieldCaption = "Номер счетчика Яндекс.Метрики:",
+				Documentation.SampleValues = {12345678}
+			]
+		),
+		token as (type text 
+			meta [
+				Documentation.FieldCaption = "Ключ авторизации:",
+				Documentation.SampleValues = {"AQAAAAA______________________hu6mY"}
+			]
+		),
         dateFrom as (type date 
 			meta [
 				Documentation.FieldCaption = "Дата начала интервала:",
@@ -188,11 +172,11 @@ in
 	) as text 
 		meta [
 			Documentation.Name = "RAW_METRIKA_API",
-			Documentation.LongDescription = "С помощью Logs API извлекает неагрегированные данные Яндекс.Метрики за указанных диапазон времени по выбранным полям. Список допустимых полей находится здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/visits-docpage/. Для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a ВНИМАНИЕ! Если указать большой диапазон и много параметров, выполнение функции может затянуться.",
+			Documentation.LongDescription = "С помощью Logs API извлекает неагрегированные данные Яндекс.Метрики за указанных диапазон времени по выбранным полям. Список допустимых полей находится здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/visits-docpage/. Для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a. ВНИМАНИЕ! Если указать большой диапазон и много параметров, выполнение функции может затянуться.",
 			Documentation.Examples = {
 				[
 					Description = "Получить неагрегированные данные за вчерашний день по странице входа, кол-ву просмотренных страниц в течение визита и продолжительностью визита",
-					Code = "RAW_METRIKA_API(#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
+					Code = "RAW_METRIKA_API(12345678, ""AQAAAAA______________________hu6mY"", #date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
 					Result = "Таблица с колонками: ""ym:s:startURL"",""ym:s:pageViews"",""ym:s:visitDuration"", в строках которой будут указаны характеристики каждого из визитов. В случае ошибки будет выведена информация о ней. Для получения колонок, установленных по-умолчанию, оставье поле ""Список полей"" пустым. Список полей по-умолчанию редактируйте в коде функции."
 				]
 			}
