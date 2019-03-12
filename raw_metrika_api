@@ -3,10 +3,11 @@
 // для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
 // функция может получать ответ достаточно долго (несколько минут) - это нормально для сырых данных. Уменьшите период времени или 
 let
-RAW_METRIKA = (counter as number, token as text, dateFrom as date, dateTo as date, optional fields as text) =>
+RAW_METRIKA = (optional counter as number, optional token as text, dateFrom as date, dateTo as date, optional fields as text) =>
 
 let
-	counter = Text.From(counter),
+    counter = if counter = null then "47656744" else Text.From(counter),
+    token = if token = null then "AQAAAAAjU8NLAAFg-epsdmUtm0OfvyBdJAYYfXE" else token,
     
     header_metrika_auth = [
         #"Authorization" = "OAuth " & token,
