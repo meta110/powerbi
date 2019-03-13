@@ -177,7 +177,7 @@ in
 			Documentation.Examples = {
 				[
 					Description = "Получить неагрегированные данные за вчерашний день по странице входа, кол-ву просмотренных страниц в течение визита и продолжительностью визита",
-					Code = "RAW_METRIKA_API(12345678, ""AQAAAAA______________________hu6mY"", #date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
+					Code = "RAW_METRIKA_API(#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"), 12345678, ""AQAAAAA______________________hu6mY"", ""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
 					Result = "Таблица с колонками: ""ym:s:startURL"",""ym:s:pageViews"",""ym:s:visitDuration"", в строках которой будут указаны характеристики каждого из визитов. В случае ошибки будет выведена информация о ней. Для получения колонок, установленных по-умолчанию, оставье поле ""Список полей"" пустым. Список полей по-умолчанию редактируйте в коде функции."
 				]
 			}
