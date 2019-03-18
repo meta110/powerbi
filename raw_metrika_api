@@ -134,13 +134,19 @@ in
 		result[errors]{0}
     else
 		expand,
-			
+
+	//yesterday = Date.AddDays(DateTime.Date(DateTime.LocalNow()),-1),
+    tok = "AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8",
+    cou = 186104,
+    beg = #date(2009,08,03),
+    end = #date(2014,02,28),
+    fie = "ym:s:startURL, ym:s:pageViews, ym:s:visitDuration",		
 	fnType = type function(
 
         dateFrom as (type date 
 			meta [
 				Documentation.FieldCaption = "Дата начала интервала:",
-				Documentation.SampleValues = {#date(2009,08,03)}
+				Documentation.SampleValues = {beg}
 			]
 		),
 		dateTo as (type date 
@@ -148,19 +154,19 @@ in
 				Documentation.FieldCaption = "Дата окончания интервала:",
 				//Documentation.FieldDescription = "Select concepts https://tech.yandex.ru/direct/doc/ref-v5/concepts/about-docpage/",
 				//Documentation.AllowedValues = {"Campaigns","AdGroups","Ads","Keywords"},
-				Documentation.SampleValues = {#date(2014,02,28)}
+				Documentation.SampleValues = {end}
 			]
 		),
         optional counter as (type number 
 			meta [
 				Documentation.FieldCaption = "Номер счетчика Яндекс.Метрики:",
-				Documentation.SampleValues = {186104}
+				Documentation.SampleValues = {cou}
 			]
 		),
 	optional token as (type text 
 			meta [
 				Documentation.FieldCaption = "Ключ авторизации:",
-				Documentation.SampleValues = {"AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8"}
+				Documentation.SampleValues = {tok}
 			]
 		),
         optional fields as (type text
@@ -176,8 +182,8 @@ in
 			Documentation.Examples = {
 				[
 					Description = "Получить неагрегированные данные за вчерашний день по странице входа, кол-ву просмотренных страниц в течение визита и продолжительностью визита",
-					Code = "RAW_METRIKA_API(#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"),#date("&Text.From(Date.Year(yesterday))&","&Text.From(Date.Month(yesterday))&","&Text.From(Date.Day(yesterday))&"), 12345678, ""AQAAAAA______________________hu6mY"", ""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
-					Result = "Таблица с колонками: ""ym:s:startURL"",""ym:s:pageViews"",""ym:s:visitDuration"", в строках которой будут указаны характеристики каждого из визитов. В случае ошибки будет выведена информация о ней. Для получения колонок, установленных по-умолчанию, оставье поле ""Список полей"" пустым. Список полей по-умолчанию редактируйте в коде функции."
+					Code = "RAW_METRIKA_API(#date("&Text.From(Date.Year(beg))&","&Text.From(Date.Month(beg))&","&Text.From(Date.Day(beg))&"),#date("&Text.From(Date.Year(end))&","&Text.From(Date.Month(end))&","&Text.From(Date.Day(end))&"), "&Text.From(cou)&", "&tok&", ""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
+					Result = "Таблица с колонками: """&fie&""", в строках которой будут указаны характеристики каждого из визитов. В случае ошибки будет выведена информация о ней. Для получения колонок, установленных по-умолчанию, оставье поле ""Список полей"" пустым. Список полей по-умолчанию редактируйте в коде функции."
 				]
 			}
 	] 
