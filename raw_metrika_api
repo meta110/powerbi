@@ -6,8 +6,8 @@ let
 RAW_METRIKA = (dateFrom as date, dateTo as date, optional counter as number, optional token as text, optional fields as text) =>
 
 let
-    counter = if counter = null then "47656744" else Text.From(counter),
-    token = if token = null then "AQAAAAAjU8NLAAFg-epsdmUtm0OfvyBdJAYYfXE" else token,
+    counter = if counter = null then "186104" else Text.From(counter),
+    token = if token = null then "AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8" else token,
     
     header_metrika_auth = [
         #"Authorization" = "OAuth " & token,
@@ -155,13 +155,13 @@ in
         optional counter as (type number 
 			meta [
 				Documentation.FieldCaption = "Номер счетчика Яндекс.Метрики:",
-				Documentation.SampleValues = {12345678}
+				Documentation.SampleValues = {186104}
 			]
 		),
 	optional token as (type text 
 			meta [
 				Documentation.FieldCaption = "Ключ авторизации:",
-				Documentation.SampleValues = {"AQAAAAA______________________hu6mY"}
+				Documentation.SampleValues = {"AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8"}
 			]
 		),
         optional fields as (type text
