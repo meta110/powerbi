@@ -134,14 +134,13 @@ in
 		result[errors]{0}
     else
 		expand,
-		
-	yesterday = Date.AddDays(DateTime.Date(DateTime.LocalNow()),-1),	
+			
 	fnType = type function(
 
         dateFrom as (type date 
 			meta [
 				Documentation.FieldCaption = "Дата начала интервала:",
-				Documentation.SampleValues = {yesterday}
+				Documentation.SampleValues = {#date(2009,08,03)}
 			]
 		),
 		dateTo as (type date 
@@ -149,7 +148,7 @@ in
 				Documentation.FieldCaption = "Дата окончания интервала:",
 				//Documentation.FieldDescription = "Select concepts https://tech.yandex.ru/direct/doc/ref-v5/concepts/about-docpage/",
 				//Documentation.AllowedValues = {"Campaigns","AdGroups","Ads","Keywords"},
-				Documentation.SampleValues = {yesterday}
+				Documentation.SampleValues = {#date(2014,02,28)}
 			]
 		),
         optional counter as (type number 
