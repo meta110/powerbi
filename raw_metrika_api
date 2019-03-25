@@ -7,7 +7,7 @@ RAW_METRIKA = (dateFrom as date, dateTo as date, optional counter as number, opt
 
 let
     counter = if counter = null then "186104" else Text.From(counter),
-    token = if token = null then "AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8" else token,
+    token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token,
     
     header_metrika_auth = [
         #"Authorization" = "OAuth " & token,
