@@ -1,0 +1,439 @@
+/*
+    ИНСТРУКЦИЯ
+    1. Пройдите по ссылке ttp://bit.ly/raw_metrika и скопируйте в буфер обмена свежую версию этой функции
+    2. Создайте пустой запрос с именем RAW_METRIKA_API и вставьте в него указанный код
+    3. Для получения токена пройдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
+    
+    ВНИМАНИЕ! функция может получать ответ достаточно долго (несколько минут) - это нормально для сырых данных. Уменьшите период времени или кол-во запрашиваемых полей
+*/
+///*
+let
+RAW_METRIKA_API = (dateFrom as date, dateTo as date, optional counter as number, optional token as text, optional report1 as text, optional fields1 as any) =>
+//*/
+let
+/*
+    //debug data
+    counter =  "186104",
+    token = "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks",
+    dateFrom = Date.ToText(#date(2013,10,1),"yyyy-MM-dd"),
+    dateTo = Date.ToText(#date(2013,10,1),"yyyy-MM-dd"),
+    report1 = null,
+    fields1 = null,
+*/
+
+///*
+    counter = if counter = null then "186104" else Text.From(counter),
+    token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token,
+    dateFrom = Date.ToText(dateFrom,"yyyy-MM-dd"),
+    dateTo = Date.ToText(dateTo,"yyyy-MM-dd"),
+//*/    
+
+    //Чтобы изменить список полей, запрашиваемых по умолчанию, закомментируйте ненужные поля и снимите комментарии с нужных полей
+    fields_visits = {
+        //"ym:s:counterID", //Номер счетчика
+        "ym:s:watchIDs", //Просмотры, которые были в данном визите. Ограничение массива — 500 просмотров
+        //"ym:s:date", //Дата визита
+        "ym:s:dateTime", //Дата и время визита
+        //"ym:s:dateTimeUTC", //Unix timestamp времени первого хита
+        "ym:s:isNewUser", //Первый визит посетителя
+        "ym:s:startURL", //Страница входа
+        "ym:s:endURL", //Страница выхода
+        "ym:s:pageViews", //Глубина просмотра (детально)
+        "ym:s:visitDuration", //Время на сайте (детально)
+        "ym:s:bounce", //Отказность
+        //"ym:s:ipAddress", //IP адрес
+        "ym:s:regionCountry", //Страна (ISO)
+        "ym:s:regionCity", //Город (английское название)
+        //"ym:s:regionCountryID", //ID страны
+        //"ym:s:regionCityID", //ID города
+        //"ym:s:params", //Параметры визита. Одинарные кавычки дополнительно экранируются как \\u0027
+        "ym:s:clientID", //Идентификатор пользователя на сайте
+        "ym:s:networkType", //Тип соединения
+        "ym:s:goalsID", //Идентификатор целей, достигнутых за данный визит
+        "ym:s:goalsDateTime", //Время достижения каждой цели
+        //"ym:s:goalsPrice", //Ценность цели
+        //"ym:s:goalsOrder", //Идентификатор заказов
+        //"ym:s:goalsCurrency", //Идентификатор валюты
+        "ym:s:lastTrafficSource", //Источник трафика
+        "ym:s:lastAdvEngine", //Рекламная система
+        "ym:s:lastReferalSource", //Переход с сайтов
+        "ym:s:lastSearchEngineRoot", //Поисковая система
+        //"ym:s:lastSearchEngine", //Поисковая система (детально)
+        "ym:s:lastSocialNetwork", //Cоциальная сеть
+        "ym:s:lastSocialNetworkProfile", //Группа социальной сети
+        "ym:s:referer", //Реферер
+        "ym:s:lastDirectClickOrder", //Кампания Яндекс.Директа
+        "ym:s:lastDirectBannerGroup", //Группа объявлений
+        "ym:s:lastDirectClickBanner", //Объявление Яндекс.Директа
+        "ym:s:lastDirectClickOrderName", //Название кампании Яндекс.Директа
+        "ym:s:lastClickBannerGroupName", //Название группы объявлений
+        "ym:s:lastDirectClickBannerName", //Название объявления Яндекс.Директа
+        "ym:s:lastDirectPhraseOrCond", //Условие показа объявления
+        "ym:s:lastDirectPlatformType", //Тип площадки
+        "ym:s:lastDirectPlatform", //Площадка
+        "ym:s:lastDirectConditionType", //Тип условия показа объявления
+        //"ym:s:lastCurrencyID", //Валюта
+        "ym:s:from", //Метка from
+        "ym:s:UTMCampaign", //UTM Campaign
+        "ym:s:UTMContent", //UTM Content
+        "ym:s:UTMMedium", //UTM Medium
+        "ym:s:UTMSource", //UTM Source
+        "ym:s:UTMTerm", //UTM Term
+        //"ym:s:openstatAd", //Openstat Ad
+        //"ym:s:openstatCampaign", //Openstat Campaign
+        //"ym:s:openstatService", //Openstat Service
+        //"ym:s:openstatSource", //Openstat Source
+        //"ym:s:hasGCLID", //Наличие метки GCLID
+        //"ym:s:lastGCLID", //GCLID последнего визита
+        //"ym:s:firstGCLID", //GCLID первого визита
+        //"ym:s:lastSignificantGCLID", //GCLID последнего значимого визита
+        //"ym:s:browserLanguage", //Язык браузера
+        //"ym:s:browserCountry", //Страна браузера
+        //"ym:s:clientTimeZone", //Часовой пояс на компьютере посетителя
+        "ym:s:deviceCategory", //Тип устройства. Возможные значения: 1 — десктоп, 2 — мобильные телефоны, 3 — планшеты, 4 — TV
+        "ym:s:mobilePhone", //Производитель устройства
+        "ym:s:mobilePhoneModel", //Модель устройства
+        "ym:s:operatingSystemRoot", //Группа операционных систем
+        //"ym:s:operatingSystem", //Операционная система (детально)
+        "ym:s:browser", //Браузер
+        //"ym:s:browserMajorVersion", //Major-версия браузера
+        //"ym:s:browserMinorVersion", //Minor-версия браузера
+        //"ym:s:browserEngine", //Движок браузера
+        //"ym:s:browserEngineVersion1", //Major-версия движка браузера
+        //"ym:s:browserEngineVersion2", //Minor-версия движка браузера
+        //"ym:s:browserEngineVersion3", //Build-версия движка браузера
+        //"ym:s:browserEngineVersion4", //Revision-версия движка браузера
+        //"ym:s:cookieEnabled", //Наличие Cookie
+        //"ym:s:javascriptEnabled", //Наличие JavaScript
+        //"ym:s:flashMajor", //Старший номер версии Flash. Может принимать значение 0, если у посетителя не поддерживается Flash
+        //"ym:s:flashMinor", //Младший номер версии Flash
+        //"ym:s:screenFormat", //Соотношение сторон
+        //"ym:s:screenColors", //Глубина цвета
+        "ym:s:screenOrientation", //Ориентация экрана
+        "ym:s:screenWidth", //Логическая ширина
+        "ym:s:screenHeight", //Логическая высота
+        "ym:s:physicalScreenWidth", //Физическая ширина
+        "ym:s:physicalScreenHeight", //Физическая высота
+        "ym:s:windowClientWidth", //Ширина окна
+        "ym:s:windowClientHeight", //Высота окна
+        //"ym:s:purchaseID", //Идентификатор покупки
+        //"ym:s:purchaseDateTime", //Дата и время покупки
+        //"ym:s:purchaseAffiliation", //Магазин или филиал, в котором произошла транзакция
+        //"ym:s:purchaseRevenue", //Полученный доход
+        //"ym:s:purchaseTax", //Сумма всех налогов, связанных с транзакцией
+        //"ym:s:purchaseShipping", //Стоимость доставки, связанная с транзакцией
+        //"ym:s:purchaseCoupon", //Промокод, ассоциированный со всей покупкой целиком
+        //"ym:s:purchaseCurrency", //Валюта
+        //"ym:s:purchaseProductQuantity", //Количество товаров в покупке
+        //"ym:s:productsPurchaseID", //Идентификатор покупки
+        //"ym:s:productsID", //Идентификатор товара
+        //"ym:s:productsName", //Название товара
+        //"ym:s:productsBrand", //Производитель товара
+        //"ym:s:productsCategory", //Категория, к которой относится товар
+        //"ym:s:productsCategory1", //Категория, к которой относится товар, уровень 1
+        //"ym:s:productsCategory2", //Категория, к которой относится товар, уровень 2
+        //"ym:s:productsCategory3", //Категория, к которой относится товар, уровень 3
+        //"ym:s:productsCategory4", //Категория, к которой относится товар, уровень 4
+        //"ym:s:productsCategory5", //Категория, к которой относится товар, уровень 5
+        //"ym:s:productsVariant", //Разновидность товара
+        //"ym:s:productsPosition", //Положение товара в списке
+        //"ym:s:productsPrice", //Цена товара
+        //"ym:s:productsCurrency", //Валюта товара
+        //"ym:s:productsCoupon", //Промокод ассоциированный с товаром
+        //"ym:s:productsQuantity", //Количество товара
+        //"ym:s:impressionsURL", //URL страницы с товаром
+        //"ym:s:impressionsDateTime", //Дата и время просмотра
+        //"ym:s:impressionsProductID", //Идентификатор просмотренного товара
+        //"ym:s:impressionsProductName", //Название просмотренного товара
+        //"ym:s:impressionsProductBrand", //Производитель просмотренного товара
+        //"ym:s:impressionsProductCategory", //Категория, к которой относится просмотренный товар
+        //"ym:s:impressionsProductCategory1", //Категория, к которой относится просмотренный товар, уровень 1
+        //"ym:s:impressionsProductCategory2", //Категория, к которой относится просмотренный товар, уровень 2
+        //"ym:s:impressionsProductCategory3", //Категория, к которой относится просмотренный товар, уровень 3
+        //"ym:s:impressionsProductCategory4", //Категория, к которой относится просмотренный товар, уровень 4
+        //"ym:s:impressionsProductCategory5", //Категория, к которой относится просмотренный товар, уровень 5
+        //"ym:s:impressionsProductVariant", //Разновидность просмотренного товара
+        //"ym:s:impressionsProductPrice", //Цена просмотренного товара
+        //"ym:s:impressionsProductCurrency", //Валюта для товара
+        //"ym:s:impressionsProductCoupon", //Промокод ассоциированный с просмотренным товаром
+        //"ym:s:offlineCallTalkDuration", //Длительность звонка в секундах
+        //"ym:s:offlineCallHoldDuration", //Длительность ожидания звонка в секундах
+        //"ym:s:offlineCallMissed", //Пропущен ли звонок
+        //"ym:s:offlineCallTag", //Произвольная метка
+        //"ym:s:offlineCallFirstTimeCaller", //Первичный ли звонок
+        //"ym:s:offlineCallURL", //URL, с которого был звонок (ассоциированная с событием страница)
+        //ВНИМАНИЕ! Перед закрывающей фигурной скобкой "}" не должно быть запятой ",", поэтому не комментируйте и не удаляйте следующую строчку, если не понимаете как это исправить!
+        "ym:s:visitID" //Идентификатор визита
+        //ВНИМАНИЕ! Чтобы ничего не сломать, не удаляйте и не комментируйте предыдущую строку!    
+    },
+
+    //Чтобы изменить список полей, запрашиваемых по умолчанию, закомментируйте ненужные поля и снимите комментарии с нужных полей
+    fields_hits = {
+        //"ym:pv:counterID", //Номер счетчика
+        //"ym:pv:date", //Дата события
+        "ym:pv:dateTime", //Дата и время события
+        "ym:pv:title", //Заголовок страницы
+        "ym:pv:URL", //Адрес страницы
+        "ym:pv:referer", //Реферер
+        "ym:pv:UTMCampaign", //UTM Campaign
+        "ym:pv:UTMContent", //UTM Content
+        "ym:pv:UTMMedium", //UTM Medium
+        "ym:pv:UTMSource", //UTM Source
+        "ym:pv:UTMTerm", //UTM Term
+        //"ym:pv:browser", //Браузер
+        //"ym:pv:browserMajorVersion", //Major-версия браузера
+        //"ym:pv:browserMinorVersion", //Minor-версия браузера
+        //"ym:pv:browserCountry", //Страна браузера
+        //"ym:pv:browserEngine", //Движок браузера
+        //"ym:pv:browserEngineVersion1", //Major-версия движка браузера
+        //"ym:pv:browserEngineVersion2", //    Minor-версия движка браузера
+        //"ym:pv:browserEngineVersion3", //    Build-версия движка браузера
+        //"ym:pv:browserEngineVersion4", //    Revision-версия движка браузера
+        //"ym:pv:browserLanguage", //Язык браузера
+        //"ym:pv:clientTimeZone", //Часовой пояс на компьютере посетителя
+        //"ym:pv:cookieEnabled", //Наличие Cookie
+        //"ym:pv:deviceCategory", //Тип устройства. Возможные значения: 1 — десктоп, 2 — мобильные телефоны, 3 — планшеты, 4 — TV
+        //"ym:pv:flashMajor", //Major-версия Flash. Может принимать значение 0, если у посетителя не поддерживается Flash
+        //"ym:pv:flashMinor", //Minor-версия Flash
+        //"ym:pv:from", //Метка from
+        //"ym:pv:hasGCLID", //Наличие GCLID
+        //"ym:pv:GCLID", //GCLID
+        //"ym:pv:ipAddress", //IP адрес
+        //"ym:pv:javascriptEnabled", //Наличие JavaScript
+        //"ym:pv:mobilePhone", //Производитель устройства
+        //"ym:pv:mobilePhoneModel", //Модель устройства
+        //"ym:pv:openstatAd", //Openstat Ad
+        //"ym:pv:openstatCampaign", //Openstat Campaign
+        //"ym:pv:openstatService", //Openstat Service
+        //"ym:pv:openstatSource", //Openstat Source
+        //"ym:pv:operatingSystem", //Операционная система (детально)
+        //"ym:pv:operatingSystemRoot", //Группа операционных систем
+        //"ym:pv:physicalScreenHeight", //Физическая высота
+        //"ym:pv:physicalScreenWidth", //Физическая ширина
+        //"ym:pv:regionCity", //Город (английское название)
+        //"ym:pv:regionCountry", //Страна (ISO)
+        //"ym:pv:regionCityID", //ID города
+        //"ym:pv:regionCountryID", //ID страны
+        //"ym:pv:screenColors", //Глубина цвета
+        //"ym:pv:screenFormat", //Соотношение сторон
+        //"ym:pv:screenHeight", //Логическая высота
+        //"ym:pv:screenOrientation", //Ориентация экрана
+        //"ym:pv:screenWidth", //Логическая ширина
+        //"ym:pv:windowClientHeight", //Высота окна
+        //"ym:pv:windowClientWidth", //Ширина окна
+        //"ym:pv:params", //Параметры. Одинарные кавычки дополнительно экранируются как \\u0027
+        "ym:pv:lastTrafficSource", //Источник трафика
+        //"ym:pv:lastSearchEngine", //Поисковая система (детально)
+        //"ym:pv:lastSearchEngineRoot", //Поисковая система
+        //"ym:pv:lastAdvEngine", //Рекламная система
+        //"ym:pv:artificial", //Искусственный хит, переданный с помощью функций hit(), event() и пр.
+        //"ym:pv:pageCharset", //Кодировка страницы сайта
+        "ym:pv:link", //Переход по ссылке
+        "ym:pv:download", //Загрузка файла
+        "ym:pv:notBounce", //Специальное событие «неотказ» (для точного показателя отказов)
+        "ym:pv:lastSocialNetwork", //Социальная сеть
+        "ym:pv:httpError", //Код ошибки
+        //"ym:pv:clientID", //Идентификатор пользователя на сайте
+        //"ym:pv:networkType", //Тип соединения
+        //"ym:pv:lastSocialNetworkProfile", //Страница социальной сети, с которой был переход
+        "ym:pv:goalsID", //Идентификаторы достигнутых целей
+        //"ym:pv:shareService", //Кнопка «Поделиться», имя сервиса
+        //"ym:pv:shareURL", //Кнопка «Поделиться», URL
+        //"ym:pv:shareTitle", //Кнопка «Поделиться», заголовок страницы
+        //"ym:pv:iFrame", //Просмотр из iframe
+        //ВНИМАНИЕ! Перед закрывающей фигурной скобкой "}" не должно быть запятой ",", поэтому не комментируйте и не удаляйте следующую строчку, если не понимаете как это исправить!
+        "ym:pv:watchID" //Идентификатор просмотра
+        //ВНИМАНИЕ! Чтобы ничего не сломать, не удаляйте и не комментируйте предыдущую строку!
+    },
+    
+    report = if report1 = null or report1 = "Визиты" then "visits" else "hits",
+    fields = if fields1 <> null then fields1 else if report = "hits" then fields_hits else fields_visits,
+   
+    header_metrika_auth = [
+        #"Authorization" = "OAuth " & token,
+        #"Content-Type" = "application/x-yametrika+json"
+    ],
+
+    // создание запроса логов
+    Source = Web.Contents(
+        "https://api-metrika.yandex.net/management/v1/counter/" & counter & "/logrequests", [
+            Headers = header_metrika_auth,
+            Query = [
+                date1 = dateFrom,
+                date2 = dateTo,
+                fields = try Text.Combine(fields,",")
+                    otherwise Text.Combine( List.Transform( Text.Split(fields, ","), Text.Trim ), "," ),
+                source = report
+            ],
+            ManualStatusHandling = {400},
+            Content = Json.FromValue("[]")  // пустышка, чтобы GET-запрос превратился в POST                  
+        ]
+    ),
+    metadata = Value.Metadata(Source),
+    result = Json.Document(Source),
+    request_id = result[log_request][request_id], //получаю ID запроса
+    
+    LogRequest.Get = (Headers as record, RelativePath as text, IsRetry as logical) =>
+    let
+        Source3 = Web.Contents(
+            "https://api-metrika.yandex.net/management/v1/counter/", [
+                Headers = Headers,
+                IsRetry = IsRetry,
+                RelativePath = RelativePath               
+            ]
+        ),
+        metadata3 = Value.Metadata(Source3),
+        result3 = Json.Document(Source3)
+    in
+        if metadata3[Response.Status] = 200 then 
+            try result3[log_request] otherwise Source3
+        else result3,    
+
+    LogRequest.Check = (Headers as record, counter as text, request_id as number, optional IsRetry as logical) =>
+    let
+        IsRetry = if IsRetry = null then false else true,
+        report = 
+        if IsRetry then
+            Function.InvokeAfter( 
+                ()=>LogRequest.Get(Headers, counter & "/logrequest/" & Text.From(request_id),true),
+                #duration(0,0,0,5) //проверять готовность отчета каждые 5 секунд
+            )
+        else LogRequest.Get(Headers, counter & "/logrequest/" & Text.From(request_id),false)
+    in
+        report,
+    
+    //жду подготовки отчета
+    begin = DateTime.LocalNow(),
+    test = LogRequest.Check(header_metrika_auth, counter, request_id, false),
+    status = test[status],
+
+    wait4data = 
+        List.Last(
+            List.Generate(
+                ()=>[
+                    state = test,
+                    status = status,
+                    s = 0,
+                    time = 0
+                ],
+                each [s] < 2 and [time] < 180,
+                each [
+                    state = LogRequest.Check(header_metrika_auth, counter, request_id, true), 
+                    status = state[status],
+                    s = if [status] = "created" then [s] else [s] + 1,
+                    time = Duration.Seconds(DateTime.LocalNow() - begin)
+                ]
+            )
+        ),
+    
+    AddTime = 
+        if status = "processed" then
+            Record.AddField(
+                test,
+                "Duration",
+                0
+            )
+        else
+            Record.AddField(
+                wait4data[state],
+                "Duration",
+                wait4data[time]
+            ),
+
+    //распаковываю отчет
+    parts = Table.AddColumn(
+        Table.FromRecords(AddTime[parts]), 
+        "part_content", 
+        each LogRequest.Get(
+            Record.AddField(header_metrika_auth, "Accept-Encoding", "gzip"),
+            counter & "/logrequest/" & Text.From(request_id) & "/part/" & Text.From([part_number]) & "/download",
+            false
+        )
+    ),
+    unpack = Table.TransformColumns(
+        parts,
+        {
+            "part_content", 
+            each Table.PromoteHeaders(
+                Csv.Document(_,AddTime[fields],"#(tab)")
+            )
+        }
+    ),
+    expand = Table.SelectColumns(
+        Table.ExpandTableColumn(unpack, "part_content", AddTime[fields], AddTime[fields]),
+        AddTime[fields]
+    )
+    
+in
+//    expand
+///*
+    if metadata[Response.Status] = 400 then
+        result[errors]{0}
+    else
+        expand,
+
+    yesterday = Date.AddDays(DateTime.Date(DateTime.LocalNow()),-1),
+    tok = "AQAAAAADYH8cAAFg-dv0iYDePUFbsFyLBO5drM8",
+    cou = 186104,
+    beg = #date(2009,08,03),
+    end = #date(2014,02,28),
+    fie = "ym:s:startURL, ym:s:pageViews, ym:s:visitDuration",        
+    fnType = type function(
+
+        dateFrom as (type date 
+            meta [
+                Documentation.FieldCaption = "Дата начала интервала:",
+                Documentation.FieldDescription = "Дата начала интервала не может быть позднее чем вчера: " & Text.From(yesterday),
+                Documentation.SampleValues = {beg}
+            ]
+        ),
+        dateTo as (type date 
+            meta [
+                Documentation.FieldCaption = "Дата окончания интервала:",
+                Documentation.FieldDescription = "Дата окончания должна совпадать с датой начала интервала или быть раньше нее",
+                Documentation.SampleValues = {end}
+            ]
+        ),
+        optional counter as (type number 
+            meta [
+                Documentation.FieldCaption = "Номер счетчика Яндекс.Метрики:",
+                Documentation.FieldDescription = "Ищите номер счетчика в Метрике нужного сайта или на странице https://metrika.yandex.ru/list",
+                Documentation.SampleValues = {cou}
+            ]
+        ),
+    optional token as (type text 
+            meta [
+                Documentation.FieldCaption = "Ключ авторизации:",
+                Documentation.FieldDescription = "Для получения ключа авторизуйтесь в метрике и пройдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a",
+                Documentation.SampleValues = {tok}
+            ]
+        ),
+        optional report1 as (type text
+            meta [
+                Documentation.FieldCaption = "Выберите тип отчета",
+                Documentation.FieldDescription = "Выбирайте ""Визиты"", если не уверены что выбрать",
+                Documentation.AllowedValues = {"Визиты","Просмотры"}
+            ]
+        ),
+        optional fields1 as (type any
+            meta [
+                Documentation.FieldCaption = "Список полей через запятую или List (списком):",
+                Documentation.FieldDescription = "Перечислите поля через запятую или передайте список полей. Список допустимых полей для отчета ""Визиты"" находится здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/visits-docpage/, а для отчета ""Просмотры"" - здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/hits-docpage/"
+            ]
+        )
+    ) as text /*
+        //отображается либо Documentation.FieldDescription либо документация к функции
+        meta [
+            Documentation.Name = "RAW_METRIKA_API",
+            Documentation.LongDescription = "С помощью Logs API извлекает неагрегированные данные Яндекс.Метрики за указанных диапазон времени по выбранным полям. Список допустимых полей находится здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/visits-docpage/. Для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a. ВНИМАНИЕ! Если указать большой диапазон и много параметров, выполнение функции может затянуться.",
+            Documentation.Examples = {
+                [
+                    Description = "Получить неагрегированные данные за вчерашний день по странице входа, кол-ву просмотренных страниц в течение визита и продолжительностью визита",
+                    Code = "RAW_METRIKA_API(#date("&Text.From(Date.Year(beg))&","&Text.From(Date.Month(beg))&","&Text.From(Date.Day(beg))&"),#date("&Text.From(Date.Year(end))&","&Text.From(Date.Month(end))&","&Text.From(Date.Day(end))&"), "&Text.From(cou)&", "&tok&", ""ym:s:startURL, ym:s:pageViews, ym:s:visitDuration"")",
+                    Result = "Таблица с колонками: """&fie&""", в строках которой будут указаны характеристики каждого из визитов. В случае ошибки будет выведена информация о ней. Для получения колонок, установленных по-умолчанию, оставье поле ""Список полей"" пустым. Список полей по-умолчанию редактируйте в коде функции."
+                ]
+            }
+        ] */
+in
+    Value.ReplaceType(RAW_METRIKA_API, fnType)
+//*/
