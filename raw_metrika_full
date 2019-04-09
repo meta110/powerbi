@@ -26,6 +26,7 @@ let
     token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token,
     dateFrom = Date.ToText(dateFrom,"yyyy-MM-dd"),
     dateTo = Date.ToText(dateTo,"yyyy-MM-dd"),
+    delayRequest = 10, //задержка между последовательными запросами
 //*/    
 
     //Чтобы изменить список полей, запрашиваемых по умолчанию, закомментируйте ненужные поля и снимите комментарии с нужных полей
@@ -296,7 +297,7 @@ let
         if IsRetry then
             Function.InvokeAfter( 
                 ()=>LogRequest.Get(Headers, counter & "/logrequest/" & Text.From(request_id),true),
-                #duration(0,0,0,5) //проверять готовность отчета каждые 5 секунд
+                #duration(0,0,0,delayRequest) //проверять готовность отчета каждые delayRequest секунд
             )
         else LogRequest.Get(Headers, counter & "/logrequest/" & Text.From(request_id),false)
     in
