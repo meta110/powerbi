@@ -1,6 +1,6 @@
 /*
     ИНСТРУКЦИЯ
-    1. Пройдите по ссылке ttp://bit.ly/raw_metrika и скопируйте в буфер обмена свежую версию этой функции
+    1. Пройдите по ссылке https://github.com/meta110/powerbi/edit/master/raw_metrika_full и скопируйте в буфер обмена свежую версию этой функции
     2. Создайте пустой запрос с именем RAW_METRIKA_API и вставьте в него указанный код
     3. Для получения токена пройдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
     
