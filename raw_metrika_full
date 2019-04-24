@@ -3,6 +3,7 @@
     1. Пройдите по ссылке https://raw.githubusercontent.com/meta110/powerbi/master/raw_metrika_full и скопируйте в буфер обмена свежую версию этой функции
     2. Создайте пустой запрос с именем RAW_METRIKA_API и вставьте в него указанный код
     3. Для получения токена пройдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a
+    4. Читайте комментарии в коде, чтобы изменить значения по умолчанию
     
     ВНИМАНИЕ! функция может получать ответ достаточно долго (несколько минут) - это нормально для сырых данных. Уменьшите период времени или кол-во запрашиваемых полей
 */
@@ -12,7 +13,7 @@ RAW_METRIKA_API = (dateFrom as date, dateTo as date, optional counter as number,
 //*/
 let
 /*
-    //debug data
+    //данные для отладки - если всё устраивает, этот блок можно удалить
     counter =  "186104",
     token = "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks",
     dateFrom = Date.ToText(#date(2013,10,1),"yyyy-MM-dd"),
@@ -22,8 +23,8 @@ let
 */
 
 ///*
-    counter = if counter = null then "186104" else Text.From(counter),
-    token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token,
+    counter = if counter = null then "186104" else Text.From(counter), //номер счетчика можно указать здесь
+    token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token, //токен можно указать здесь
     dateFrom = Date.ToText(dateFrom,"yyyy-MM-dd"),
     dateTo = Date.ToText(dateTo,"yyyy-MM-dd"),
     delayRequest = 10, //задержка между последовательными запросами
@@ -423,7 +424,7 @@ in
             ]
         )
     ) as text /*
-        //отображается либо Documentation.FieldDescription либо документация к функции
+        //отображается либо Documentation.FieldDescription либо документация к функции - просто снимите комментарий с этого блока, если нужно
         meta [
             Documentation.Name = "RAW_METRIKA_API",
             Documentation.LongDescription = "С помощью Logs API извлекает неагрегированные данные Яндекс.Метрики за указанных диапазон времени по выбранным полям. Список допустимых полей находится здесь: https://tech.yandex.ru/metrika/doc/api2/logs/fields/visits-docpage/. Для получения токена пройти по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=1317eb8e77a94e8eb2ad32385e0eff1a. ВНИМАНИЕ! Если указать большой диапазон и много параметров, выполнение функции может затянуться.",
