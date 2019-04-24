@@ -7,7 +7,7 @@
     
     ВНИМАНИЕ! функция может получать ответ достаточно долго (несколько минут) - это нормально для сырых данных. Уменьшите период времени или кол-во запрашиваемых полей
 */
-///*
+///* //закомментируйте этот блок для отладки
 let
 RAW_METRIKA_API = (dateFrom as date, dateTo as date, optional counter as number, optional token as text, optional report1 as text, optional fields1 as any) =>
 //*/
@@ -22,7 +22,7 @@ let
     fields1 = null,
 */
 
-///*
+///* //закомментируйте этот блок для отладки
     counter = if counter = null then "186104" else Text.From(counter), //номер счетчика можно указать здесь
     token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token, //токен можно указать здесь
     dateFrom = Date.ToText(dateFrom,"yyyy-MM-dd"),
@@ -367,7 +367,7 @@ let
     )
     
 in
-//    expand
+//    expand 
 ///*
     if metadata[Response.Status] = 400 then
         result[errors]{0}
