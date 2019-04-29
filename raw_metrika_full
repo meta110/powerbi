@@ -59,8 +59,8 @@ let
         "ym:s:lastTrafficSource", //Источник трафика
         "ym:s:lastAdvEngine", //Рекламная система
         "ym:s:lastReferalSource", //Переход с сайтов
-        "ym:s:lastSearchEngineRoot", //Поисковая система
-        //"ym:s:lastSearchEngine", //Поисковая система (детально)
+        //"ym:s:lastSearchEngineRoot", //Поисковая система
+        "ym:s:lastSearchEngine", //Поисковая система (детально)
         "ym:s:lastSocialNetwork", //Cоциальная сеть
         "ym:s:lastSocialNetworkProfile", //Группа социальной сети
         "ym:s:referer", //Реферер
