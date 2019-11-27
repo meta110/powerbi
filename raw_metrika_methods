@@ -32,7 +32,7 @@ let
     token = if token = null then "AQAAAAADYH8cAAFg-YJp23D5ZU_fpuYkxmegPks" else token, //токен можно указать здесь
     dateFrom = if dateFrom1 = null then Date.ToText(#date(2013,10,1),"yyyy-MM-dd") else Date.ToText(dateFrom1,"yyyy-MM-dd"),
     dateTo = if dateTo1 = null then Date.ToText(#date(2013,10,1),"yyyy-MM-dd") else Date.ToText(dateTo1,"yyyy-MM-dd"),
-    request_id = if request_id1 = null and List.PositionOf({"info","clean","cancel","load"},method) >= 0 then error "Методы ""info"",""clean"",""cancel"",""download"" требуют обязательный идентификатор запроса" else request_id1, 
+    request_id = if request_id1 = null and List.PositionOf({"info","clean","cancel","download"},method) >= 0 then error "Методы ""info"",""clean"",""cancel"",""download"" требуют обязательный идентификатор запроса" else request_id1, 
 	method	= if method = null then "list" else method,//
 //*/    
 
