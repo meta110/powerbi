@@ -1,5 +1,5 @@
 Даты = 
-VAR minim = MIN('дек2009'[Дата])
+VAR minim = MIN('дек2009'[Дата]) // подставьте ссылки на колонку с датами
 VAR maxim = MAX('дек2009'[Дата])
 RETURN
 ADDCOLUMNS(
