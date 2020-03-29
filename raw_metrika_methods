@@ -2,7 +2,7 @@
     ИНСТРУКЦИЯ https://github.com/meta110/powerbi/blob/master/README.md
     1. Пройдите по ссылке https://raw.githubusercontent.com/meta110/powerbi/master/raw_metrika_methods и скопируйте в буфер обмена свежую версию этой функции
     2. Создайте пустой запрос с именем RAW_METRIKA_API и вставьте в него указанный код
-    3. Для получения токена пройдите по ссылке https://clc.to/metrika-auth
+    3. Для получения токена пройдите по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=764f4af41256427ba87965a7ed31ea3d
     4. Читайте комментарии в коде, чтобы изменить значения по умолчанию
     
     
