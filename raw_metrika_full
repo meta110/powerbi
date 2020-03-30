@@ -1,6 +1,6 @@
 /*
     ФАЙЛ УСТАРЕЛ!!! ПОЛЬЗУЙТЕСЬ НОВЫМ https://github.com/meta110/powerbi/blob/master/raw_metrika_methods
-    
+   
     ИНСТРУКЦИЯ
     1. Пройдите по ссылке https://raw.githubusercontent.com/meta110/powerbi/master/raw_metrika_full и скопируйте в буфер обмена свежую версию этой функции
     2. Создайте пустой запрос с именем RAW_METRIKA_API и вставьте в него указанный код
