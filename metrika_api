@@ -1,3 +1,4 @@
+// коннектор к обычному (традиционному API Яндекс Метрики)
 let
     Source = (
         optional date_start as date, 
