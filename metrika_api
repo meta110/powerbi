@@ -1,4 +1,4 @@
-// коннектор к обычному (традиционному API Яндекс Метрики) https://yandex.ru/dev/metrika/doc/api2/api_v1/intro-docpage/
+// коннектор к обычному (традиционному) API Яндекс Метрики https://yandex.ru/dev/metrika/doc/api2/api_v1/intro-docpage/
 let
     Source = (
         optional date_start as date, // дата начала интервала, если не задана, будет 7 дней назад
