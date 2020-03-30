@@ -1,6 +1,6 @@
 # powerbi
 
-Эта инструкция к файлу https://github.com/meta110/powerbi/blob/master/raw_metrika_methods
+Это инструкция к файлу https://github.com/meta110/powerbi/blob/master/raw_metrika_methods
 
 Функция напрямую работает с Logs API Яндекс Метрики https://yandex.ru/dev/metrika/doc/api2/logs/intro-docpage/. Для одного счетчика Яндекс.Метрики суммарный размер данных, передаваемых в запросах (включая не удаленные из хранилища логи), составляет 10 ГБ.
 
