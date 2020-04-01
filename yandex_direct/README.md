@@ -1,7 +1,5 @@
 # Выгрузка статистики Яндекс Директ
 
-Инструкция для функции https://github.com/meta110/pq_ya_direct/blob/master/direct_stat.m
-
 Предназначена для выгрузки статистики рекламных кампаний за выбранный промежуток времени по нужному списку показателей напрямую в Power BI или Excel.
 
 Функция работает с сервисом Reports API Яндекс Директ 5 версии: https://yandex.ru/dev/direct/doc/reports/reports-docpage/
