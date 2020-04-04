@@ -1,3 +1,7 @@
+---
+permalink: /index.html
+---
+
 # Metrika Logs API > Power Bi & Excel
 
 Это инструкция к файлу https://github.com/meta110/powerbi/blob/master/raw_metrika_methods
