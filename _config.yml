@@ -1,4 +1,4 @@
-theme: jekyll-theme-cayman
+theme: jekyll-theme-slate
 title: Скрипты для Power BI и Excel
 description: Альтернативные интерфейсы подключения по API (коннекторы) к источникам данных с документированным кодом на языке M для Power Query
 navbar-links:
