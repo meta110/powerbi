@@ -14,19 +14,10 @@ author:
 
 social-network-links:
   rss: true
-#  email: "someone@example.com"
   facebook: iliah.nazarov
   github: meta110
   telegram: IlyaNazarov
-#  reddit: yourname
-#  linkedin: daattali
-#  xing: yourname
-#  stackoverflow: "3943160/daattali"
-#  snapchat: deanat78
-#  instagram: deanat78
   youtube: channel/UC0gJoc8up4o9wdOlkUr9CAg
-#  spotify: yourname
-#  telephone: +14159998888
-#  steam: deanat78
-#  twitch: yourname
-#  yelp: yourname
+
+gtag: "UA-162274913-1"
+gtm: "GTM-TVX6GTJ"
