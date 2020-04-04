@@ -1,6 +1,7 @@
 ---
 permalink: /index.html
 title: Подключение к Logs API из Power BI и Excel
+layout: page
 ---
 
 # Metrika Logs API > Power Bi & Excel
