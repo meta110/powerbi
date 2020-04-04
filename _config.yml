@@ -1,3 +1,32 @@
 theme: jekyll-theme-cayman
 title: Скрипты для Power BI и Excel
 description: Альтернативные интерфейсы подключения по API (коннекторы) к источникам данных с документированным кодом на языке M для Power Query
+navbar-links:
+  About Me: "aboutme"
+  Resources:
+    - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
+    - Learn markdown: "http://www.markdowntutorial.com/"
+  Author's home: "http://deanattali.com"
+avatar: "/img/avatar-icon.png"
+
+author:
+  name: Илья Назаров
+
+social-network-links:
+  rss: true
+#  email: "someone@example.com"
+  facebook: iliah.nazarov
+  github: meta110
+  telegram: IlyaNazarov
+#  reddit: yourname
+#  linkedin: daattali
+#  xing: yourname
+#  stackoverflow: "3943160/daattali"
+#  snapchat: deanat78
+#  instagram: deanat78
+  youtube: channel/UC0gJoc8up4o9wdOlkUr9CAg
+#  spotify: yourname
+#  telephone: +14159998888
+#  steam: deanat78
+#  twitch: yourname
+#  yelp: yourname
