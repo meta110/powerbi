@@ -1,8 +1,3 @@
----
-title: Подключение к Logs API из Power BI и Excel
-layout: page
----
-
 # Metrika Logs API > Power Bi & Excel
 
 Эта инструкция написана для файла [raw_metrika_methods](https://github.com/meta110/powerbi/blob/master/raw_metrika_methods)
