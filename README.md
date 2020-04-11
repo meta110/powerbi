@@ -1,5 +1,6 @@
 ---
 permalink: index.html
+layout: page
 ---
 # Metrika Logs API > Power Bi & Excel
 
