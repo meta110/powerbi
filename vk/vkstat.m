@@ -159,7 +159,7 @@ let
 					"#(cr)""office"" — по кабинету,"&
 					"#(cr)""client"" — по клиенту," &
 					"#(cr)""campaign"" — по кампаниям," &
-					"#(cr)""ad"" — по объявлениям или ""adist"" — список объявлений"
+					"#(cr)""ad"" — по объявлениям или ""adlist"" — список объявлений"
 			)
 		else if not List.Contains({"day","month","overall"}, period) then 
 			error Error.Record(
