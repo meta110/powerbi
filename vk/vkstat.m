@@ -273,7 +273,7 @@ let
 	formatDate = (d) => 
 		if period = "day" then Date.ToText(d, "yyyy-MM-dd")
 		else if period = "month" then Date.ToText(d, "yyyy-MM")
-		else null,
+		else "0",
 
 	// распаковка статистики
 	expandStats = (stat as table) =>
