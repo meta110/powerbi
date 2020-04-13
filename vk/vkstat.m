@@ -170,22 +170,16 @@ let
 					"#(cr)""month"" — статистика по месяцам;" &
 					"#(cr)""overall"" или null — статистика за всё время."
 			)
-		else if method = "postsreach" and (not List.Contains({"ad","campaign"}, level) or ids = null) then 
+		else if ( method = "postsreach" or method = "demographics" ) 
+				and not List.Contains({"ad","campaign"}, level) and account_id = null then 
 			error Error.Record(
 				"Не указаны все необходимые параметры для метода", 
 				method,
-				"Допустимые значения level:" &
+					"#(cr)Идентификатор аккаунта не должен быть пустым." &
+					"#(cr)Допустимые значения level:" &
 					"#(cr)""ad"" — статистика по объявлениям;" &
 					"#(cr)""campaign"" — статистика по кампаниям." &
 					"#(cr)Перечислите в ids список идентификаторов (не более 100), соответствующих level."
-			)
-		else if method = "demographics" and not List.Contains({"ad","campaign"}, level) then 
-			error Error.Record(
-				"Не указаны все необходимые параметры для метода", 
-				method,
-				"Допустимые значения level:" &
-					"#(cr)""ad"" — статистика по объявлениям;" &
-					"#(cr)""campaign"" — статистика по кампаниям."
 			)
 		else null,
 
@@ -199,7 +193,8 @@ let
 
 	common = [
 		access_token = access_token, 
-		v = API_version
+		v = API_version,
+		lang = "ru"
 	], // доступы
 
 	// обертка к Web Contents с задержкой между запросами
@@ -252,7 +247,7 @@ let
 			res("ads.getCampaigns", params)
 		else if level = "ad" or level = "adlist" then
 			res("ads.getAds", params)
-		else res(method, params),
+		else null,
 
 	numbers2text = (l as list) => Text.Combine(List.Transform(l, Text.From),","),
 	
@@ -304,7 +299,7 @@ let
 			expandDemographics(res("ads.getDemographics", Query & params))
 		else if method = "postsreach" then
 			res("ads.getPostsReach", params & [ids_type = level, ids = fix_ids])
-		else res(method, Query & params),
+		else null, //res(method, Query & params),
 
 	// разбираю ошибки
 	check4err = (val) => let
@@ -341,14 +336,16 @@ let
 	
 	// результат
 	result = 
-		if level <> null and level <> "adlist"
+		if method <> null and allStatistics = null
+		then res(method,params)
+		else if level <> null and level <> "adlist"
 		then try expandStats(allStatistics) otherwise allStatistics
 		else r1,
 	return = if err[HasError] then err[Error] else check4err(result)
 	in
 		return,
 		//errs[keys]{List.PositionOf(errs[vals], return[error][error_msg])}
-		//r1
+		//r1,
 		//res("ads.getPostsReach", params & [ids_type = level, ids = fix_ids])
 //in
 	//get,
