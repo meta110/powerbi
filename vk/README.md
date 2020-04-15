@@ -8,7 +8,7 @@
 
 ## Инструкция по работе
 1. Создайте в редакторе Power Query, встроенном в Power BI или Excel новую функцию и вставьте в неё [исходный код](https://raw.githubusercontent.com/meta110/powerbi/master/vk/vkstat.m). Переименуйте свой запрос, например, в VK
-1. Получите токен по [этой инструкции](https://meta110.github.io/services/vkauth/)
+1. Получите токен по [этой инструкции](https://meta110.github.io/services/vkauth/) или используйте имеющийся, например, от [rvkstat](https://github.com/selesnow/rvkstat)
 1. Создайте текстовый параметр в Power BI или Excel и запишите в него токен, или просто подставьте его первым аргументом в вызове фукнции
 
  [![Видео о том, как работать с коннектором](https://github.com/meta110/meta110.github.io/blob/master/img/vk_video_cover.png?raw=true)](https://www.youtube.com/watch?v=BEE3P_jK0R8)
@@ -18,7 +18,7 @@
 
 Параметр|Тип|Значение по умолчанию|Описание
 --------|---|---------------------|---
-access_token|text|-|Токен доступа. Получите по [этой инструкции](https://meta110.github.io/services/vkauth/)
+access_token|text|-|Токен доступа. Получите по [этой инструкции](https://meta110.github.io/services/vkauth/) или используйте имеющийся
 account_id|number|-|Идентификатор рекламного аккаунта
 client_id|number|-|Идентификатор клиента агентского рекламного аккаунта или null, если аккаунт не агентский
 level|text|-|Уровень детализации статистики. Если не указать параметр, то будут возвращаться списки: рекламных кабинетов, клиентов, кампаний. Для получения списка объявлений используйте "adlist". Другие допустимые значения: "office" — статистика по всему аккаунту, "client" — по клиентам, "campaign" — по кампаниям и "ad" — по объявлениям
@@ -37,7 +37,7 @@ VK(access_token)
 ~~~
 Вызывает метод [ads.getAccounts](https://vk.com/dev/ads.getAccounts)
 
-access_token можно получить по [этой инструкции](https://meta110.github.io/services/vkauth/)
+access_token можно получить по [этой инструкции](https://meta110.github.io/services/vkauth/) или по инструкции [Алексея Селезнева](https://github.com/selesnow) к функции [rvkstat](https://github.com/selesnow/rvkstat)
 
 ### Список клиентов агентства
 ~~~
