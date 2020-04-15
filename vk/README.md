@@ -9,6 +9,8 @@
 1. Получите токен по [этой инструкции](https://meta110.github.io/services/vkauth/)
 1. Создайте текстовый параметр в Power BI или Excel и запишите в него токен, или просто подставьте его первым аргументом в вызове фукнции
 
+ [![Видео о том, как работать с коннектором](https://github.com/meta110/meta110.github.io/blob/master/img/vk_video_cover.png?raw=true)](https://www.youtube.com/watch?v=BEE3P_jK0R8)
+
 ## Описание параметров
 Все параметры необязательные, но токен всё равно нужно получить :wink:
 
