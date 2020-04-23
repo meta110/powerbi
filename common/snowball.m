@@ -50,7 +50,7 @@ let
     ],
 
     step1 = matches(RV, "PERFECTIVEGERUND"),
-    m1 = Value.Metadata(step1b2),
+    // m1 = Value.Metadata(step1b2), // как-нибудь прокину метаданные с предполагаемой частью речи до результата
     step1a = matches(RV,"REFLEXIVE"),
 
     step1b1 = matches(step1a,"ADJECTIVE"),
@@ -64,7 +64,7 @@ let
         
     step2 = Text.TrimEnd(step1result,"и"),
 
-    step2R2 = R2(step2),
+    step2R2 = R2(step2), // спорное решение, но переделывать сейчас не буду
     step3 = if matches(step2R2,"DERIVATIONAL") <> step2R2 then matches(step2,"DERIVATIONAL") else step2,
 
     step4super = matches(step3,"SUPERLATIVE"),
