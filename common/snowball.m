@@ -1,5 +1,5 @@
 // http://snowball.tartarus.org/algorithms/russian/stemmer.html
-// тесты https://github.com/mazko/jssnowball/tree/master/js_snowball/tests/js
+// прошел тест https://github.com/mazko/jssnowball/tree/master/js_snowball/tests/js
 
 (words as text) =>
 let
