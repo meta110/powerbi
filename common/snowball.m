@@ -1,7 +1,7 @@
-// http://snowball.tartarus.org/algorithms/russian/stemmer.html
+// стеммер http://snowball.tartarus.org/algorithms/russian/stemmer.html
 // прошел тест https://github.com/mazko/jssnowball/tree/master/js_snowball/tests/js
 
-(words as text) =>
+(word as text) => // если слово состоит из символов, отличных от а-я, то оно вернется в неизменном виде
 let
     //words = "уставший",
 
@@ -35,7 +35,7 @@ let
 
     R2 = (RV) => let RV_map = Text.Combine(List.Transform(Text.ToList(RV), each if List.Contains(vovels,_) then "a" else "b")) in Text.Range(RV, try Text.PositionOf(RV_map,"ba",2){1} + 1 otherwise Text.Length(RV)),
     
-    Source = Text.Replace(Text.Lower(words), "ё", "е"),
+    Source = Text.Replace(Text.Lower(word), "ё", "е"),
 
     PORTER = [
         VOVEL = "аеиоуыэюя", // список гласных
@@ -76,6 +76,6 @@ let
     return = 
         if List.ContainsAll(letters, Text.ToList(Source)) and first_vovel >= 0
         then Text.Start(Source, first_vovel+1) & step4
-        else Source
+        else word
 in
     return
