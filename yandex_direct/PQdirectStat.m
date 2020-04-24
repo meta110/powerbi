@@ -26,7 +26,7 @@ let
             //"AdGroupId", //ID группы объявлений
             //"AdGroupName", //Название группы объявлений
             //"AdId", //ID объявления
-            //"AdNetworkType", //Тип площадки
+            //"AdNetworkType", //Тип площадки (поиск, сети) не работает с SEARCH_QUERY_PERFORMANCE_REPORT
             "Age", //Возрастная группа
             //"AudienceTargetId", //ID условия нацеливания на аудиторию
             //"AvgClickPosition", //Средняя позиция клика
