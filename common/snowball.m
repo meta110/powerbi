@@ -1,13 +1,13 @@
 // стеммер http://snowball.tartarus.org/algorithms/russian/stemmer.html
 // прошел тест https://github.com/mazko/jssnowball/tree/master/js_snowball/tests/js
-// в метаданных возвращает найденную часть речи
+// в метаданных (part) возвращает найденную часть речи
 (word as text) => // если слово состоит из символов, отличных от а-я, то оно вернется в неизменном виде
 let
     //word = "уставший",
 
     letters = {"а".."я"},
 
-    matches = ( word, endings ) => let
+    matches = ( word, endings ) => let // а кому сейчас легко без регулярок? :wink:
         porter = Record.Field( PORTER, endings ), // получаю нужный список суффиксов и окончаний
         has_groups = Value.Is( porter, type list ), // проверяю группы в списке
         l = 
