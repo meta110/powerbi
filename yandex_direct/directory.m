@@ -3,7 +3,7 @@ let
 
 	///* тестовые значения
 	Directory = "Campaigns", // https://yandex.ru/dev/direct/doc/ref-v5/campaigns/campaigns-docpage/
-	Ids = {51455525}, // список. работает в camp, adgroup, ads
+	Ids = null, // список. работает в camp, adgroup, ads
 	FieldNames = { "Id", "Name", "NegativeKeywords" }, //{"NegativeKeywords", "BlockedIps", "ExcludedSites", "Currency", "DailyBudget", "Notification", "EndDate", "Funds", "ClientInfo", "Id", "Name", "NegativeKeywords", "RepresentedBy", "StartDate", "Statistics", "State", "Status", "StatusPayment", "StatusClarification", "SourceId", "TimeTargeting", "TimeZone", "Type"}, // camp, adgroup, ads
 	Types = null, // список. работает в camp, adgroup, ads
 	Statuses = null, // список. работает в camp, adgroup, ads
