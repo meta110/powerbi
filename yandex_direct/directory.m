@@ -109,22 +109,6 @@ let
 		)
 	),
 
-	/*
-	// рекурсивно применяет функцию ко всем полям записи
-	apply = ( rec as record, func as function ) => let
-		field_names = Record.FieldNames( rec ),
-		field_trans = List.Transform( 
-			field_names, 
-			each  
-				if Value.Is( Record.Field( rec, _ ), type record ) then 
-					(val) => @apply( val, func )
-				else (val) => func( val )
-		),
-		trans_list = List.Zip({ field_names, field_trans }),
-		return = Record.TransformFields( rec, trans_list )
-	in return,
-	*/
-
 	response = (offset) => Web.Contents( 
 		"https://api.direct.yandex.com/json/v5/", [ 
 			Content = Json.FromValue(
