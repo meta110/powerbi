@@ -3,8 +3,8 @@ let
 
 	///* тестовые значения
 	Directory = "Campaigns", // https://yandex.ru/dev/direct/doc/ref-v5/campaigns/campaigns-docpage/
-	Ids = null, // список. работает в camp, adgroup, ads
-	FieldNames = {"Id", "Name", "NegativeKeywords"}, //{"NegativeKeywords", "BlockedIps", "ExcludedSites", "Currency", "DailyBudget", "Notification", "EndDate", "Funds", "ClientInfo", "Id", "Name", "NegativeKeywords", "RepresentedBy", "StartDate", "Statistics", "State", "Status", "StatusPayment", "StatusClarification", "SourceId", "TimeTargeting", "TimeZone", "Type"}, // camp, adgroup, ads
+	Ids = {51455525}, // список. работает в camp, adgroup, ads
+	FieldNames = { "Id", "Name", "NegativeKeywords" }, //{"NegativeKeywords", "BlockedIps", "ExcludedSites", "Currency", "DailyBudget", "Notification", "EndDate", "Funds", "ClientInfo", "Id", "Name", "NegativeKeywords", "RepresentedBy", "StartDate", "Statistics", "State", "Status", "StatusPayment", "StatusClarification", "SourceId", "TimeTargeting", "TimeZone", "Type"}, // camp, adgroup, ads
 	Types = null, // список. работает в camp, adgroup, ads
 	Statuses = null, // список. работает в camp, adgroup, ads
 	States = null, // список. работает в camp
@@ -20,7 +20,7 @@ let
 	Request = [
 		method = "get", // обязательное
 		params = [ // обязательное
-			SelectionCriteria = [ // обязательное, может быть пустым, но быть должно
+			SelectionCriteria = [ // обязательное, может быть с пустой записью внутри, чтобы выбрать всё
 				Ids = Ids, //
 				Types = Types, //
 				States = States, //
@@ -46,17 +46,18 @@ let
 	*/
 	record_replace_value = ( rec as record, field as list, value as any ) => let
 		depth = List.Count(field) - 1, // индексы начинаются с 0, а кол-во полей - с 1
-		go_deep = (rec as record, optional level as number) => let this_field = field { level } 
+		go_deep = (rec as record, optional level as number) => let this_field = field { level } // название поля на текущем уровне
 		in Record.AddField(
-			Record.SelectFields(
+			Record.SelectFields( // выбираю значения остальных полей (не тех, в которых будут изменения)
 				rec, 
-				List.RemoveItems(
-					Record.FieldNames( rec ), 
-					{ this_field }
+				List.RemoveItems( 
+					Record.FieldNames( rec ), // из списка названий всех существующих полей
+					{ this_field } // удаляю название того, которое буду менять
 				)
 			), 
 			this_field, 
-			if level = depth then value else 
+			if level = depth then value // погрузился на максимальную глубину иерархии, поэтому подставляю новое значение
+			else // рекурсивно погружаюсь на следующий уровень
 				@go_deep(
 					try Record.Field( rec, this_field ) otherwise [], // если поля нет, то оно будет создано
 					level + 1
@@ -71,10 +72,10 @@ let
 		test_types = List.Transform(
 			Record.FieldNames( rec ), // названия полей, которые буду перебирать
 			each let 
-					this_name = Text.Combine({last_name, _},"."), // новое название для поля: "имя_внешнего"."имя_вложенного"
-					this_value = Record.Field( rec, _) // значение текущего поля
+					this_name = Text.Combine({ last_name, _ },"."), // новое название для поля: "имя_внешнего"."имя_вложенного"
+					this_value = Record.Field( rec, _ ) // значение текущего поля
 				in
-					if Value.Is( Record.Field( rec, _ ), type record) then // если текущее поле - запись
+					if Value.Is( Record.Field( rec, _ ), type record ) then // если текущее поле - запись
 						@flat_record( this_value, this_name ) // погружаюсь дальше
 					else { Record.AddField( [], this_name, this_value )} // создаю новую запись новое_название = значение
 		),
@@ -84,14 +85,14 @@ let
 	// обертка для flat_records
 	flat_run = (rec as list) => let
 		row_list = List.Transform(
-			List.Zip({{1..List.Count(rec)},rec}), // добавляю индекс для pivot
-			each {_{0}, Record.ToTable(Record.Combine(flat_record(_{1})))} // делаю таблицу из "плоских" записей
+			List.Zip({{ 1..List.Count(rec) }, rec }), // добавляю индекс для pivot
+			each { _{0}, Record.ToTable( Record.Combine( flat_record( _{1} )))} // делаю таблицу из "плоских" записей
 		),
-		tabl = Table.FromRows(row_list, type table [ Index = number, Table = table ]),
-		expand = Table.ExpandTableColumn(tabl,"Table",{"Name","Value"}), // стандартные названия, созданные Record.ToTable
-		pivot = Table.Pivot(expand, List.Distinct(expand[Name]), "Name", "Value"), // тут нужен индекс
-		drop_index = Table.RemoveColumns(pivot, "Index"), // индекс больше не нужен
-		reorder = Table.ReorderColumns(drop_index, List.Sort(Table.ColumnNames(drop_index))), // сортирую колонки по алфавиту
+		tabl = Table.FromRows( row_list, type table [ Index = number, Table = table ]),
+		expand = Table.ExpandTableColumn( tabl, "Table", { "Name", "Value" }), // стандартные названия, созданные Record.ToTable
+		pivot = Table.Pivot( expand, List.Distinct( expand[ Name ]), "Name", "Value" ), // тут нужен индекс
+		drop_index = Table.RemoveColumns( pivot, "Index" ), // индекс больше не нужен
+		reorder = Table.ReorderColumns( drop_index, List.Sort( Table.ColumnNames( drop_index ))), // сортирую колонки по алфавиту
 		return = reorder
 	in return,
 	
@@ -126,22 +127,24 @@ let
 
 	response = (offset) => Web.Contents( 
 		"https://api.direct.yandex.com/json/v5/", [ 
-			Content=Json.FromValue(record_replace_value(content,{"params", "Page", "Offset"},offset)),
+			Content = Json.FromValue(
+				record_replace_value( content, { "params", "Page", "Offset" }, offset ) // переключаю страницу, если нужно
+			),
 			Headers = [
 				#"Authorization" = "Bearer " & tokenYandexMetrika,
 				#"Accept-Language" = "ru"
 			],
-			RelativePath = Text.Lower(Directory) // API ругается на неверный регистр
+			RelativePath = Text.Lower( Directory ) // API не принимает в другом регистре
 		]
 	),
 
-	content = remove_nulls(Request), // удаляю незаполненные поля запроса
+	content = remove_nulls( Request ), // удаляю незаполненные поля запроса
 
-	Source = Json.Document(response(0)), // для проверки ошибок
-	result = Source[result], // используется в паре мест
+	Source = Json.Document( response(0) ), // для проверки ошибок
+	result = Source[ result ], // используется в паре мест
 	Field.Offset = "LimitedBy", // для удобства
 	another = List.RemoveItems( Record.FieldNames( result ), { Field.Offset }){0}, // название другого поля ответа, не LimitedBy, его название меняется в зависимости от запрашиваемого справочника
-	offs = (rec as record) => if Record.HasFields(rec, Field.Offset) then Record.Field(rec, Field.Offset ) else null, // просто чтобы сократить строку в генераторе
+	offs = ( rec as record ) => if Record.HasFields( rec, Field.Offset ) then Record.Field( rec, Field.Offset ) else null, // просто чтобы сократить строку в генераторе
 	
 	pages = List.Generate(
 		()=> [
@@ -151,17 +154,17 @@ let
 		],
 		each [ delay ] > 0,
 		each [
-			resulta = Json.Document( response([offset]))[result],
+			resulta = Json.Document( response([ offset ]))[ result ],
 			delay = if [ offset ] = null then 0 else [ delay ],
 			offset = offs( resulta )
 		]
 		, each Record.Field([ resulta ], another ) // оставляю только то, что нужно
 	),
 
-	combine = List.Combine(pages),
-	unpack = flat_run(combine),
+	combine = List.Combine( pages ),
+	unpack = flat_run( combine ),
 	
-	return = if Record.HasFields(Source, "result") then unpack else try Source[error] otherwise Source
+	return = if Record.HasFields( Source, "result" ) then unpack else try Source[ error ] otherwise Source
 	//return = record_replace_value(content,{"params", "Page", "Offset"},120)[params]
 in
     return
