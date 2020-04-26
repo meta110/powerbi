@@ -32,17 +32,17 @@ let
 			MobileAppCampaignFieldNames = null, //
 			DynamicTextCampaignFieldNames = null, //
 			CpmBannerCampaignFieldNames = null, //
-			SmartCampaignFieldNames = null, //
-			Page = [ // обязательное в этой реализации функции
+			SmartCampaignFieldNames = null/*, //
+			Page = [ // можно оставить, чтобы управлять Limit
 				Limit = Limit, //
 				Offset = Offset //
-			]
+			]*/
 		]
 	],
 
 	/*	Создает поле в записи на любом уровне вложенности 
 		Иерархия (путь) задается в fields
-		Если задать несуществующую иерархию, то будет ошибка
+		Если задать несуществующую иерархию, то она будет создана
 	*/
 	record_replace_value = ( rec as record, field as list, value as any ) => let
 		depth = List.Count(field) - 1, // индексы начинаются с 0, а кол-во полей - с 1
@@ -58,7 +58,7 @@ let
 			this_field, 
 			if level = depth then value else 
 				@go_deep(
-					Record.Field( rec, this_field ),
+					try Record.Field( rec, this_field ) otherwise [], // если поля нет, то оно будет создано
 					level + 1
 				)
 		)
@@ -101,7 +101,9 @@ let
 			Record.FieldNames( rec ), // названия полей, которые буду перебирать
 			each let val = Record.Field( rec, _ ) in // сохраняю значение текущего поля
 				if Value.Is( val, type record ) then // если текущее поле - запись
-					Record.AddField( [], _, @remove_nulls( val ) ) // погружаюсь в него, но дополнительно не проверяю, что все вложенные записи окажутся пустыми
+					let inner_val = @remove_nulls( val ) in // проверяю вложенную запись
+					//if inner_val = [] then [] else // раскомментировать, если вложенная запись пустая, и ее нужно удалить 
+					Record.AddField( [], _, inner_val ) // копирую вложенную запись
 				else if val = null then [] else Record.AddField( [], _, val )
 		)
 	),
@@ -160,5 +162,6 @@ let
 	unpack = flat_run(combine),
 	
 	return = if Record.HasFields(Source, "result") then unpack else try Source[error] otherwise Source
+	//return = record_replace_value(content,{"params", "Page", "Offset"},120)[params]
 in
     return
