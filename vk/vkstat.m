@@ -149,7 +149,7 @@ let
 			error Error.Record(
 				"Не задан access_token", 
 				"Укажите токен доступа или получите новый на странице:", 
-				"https://meta110.github.io/services/vkauth/"
+				"https://yogabi.ru/services/vkauth/"
 			)
 		else if level <> null and not List.Contains({"ad","campaign","client","office", "adlist"}, level) then 
 			error Error.Record(
