@@ -1,4 +1,4 @@
-//*
+///*
 (
     optional token as text,
     optional counter_id as number,
@@ -14,16 +14,17 @@
 //*/
 let
 /*
-    method = "clean", //null, //"list",
-    date_from = #date(2020, 4, 26), //#date(2020, 4, 28),
+    token = ya_token,
+    method = null,//"create",
+    date_from = null, //#date(2020, 4, 26), //#date(2020, 4, 28),
     date_to = date_from, //date_from,
-    source = "visits",
+    source = null, //"visits",
     fields = "ym:s:dateTime,ym:s:isNewUser,ym:s:startURL,ym:s:endURL,ym:s:pageViews,ym:s:visitDuration,ym:s:bounce,ym:s:regionCountry,ym:s:regionCountryID,ym:s:regionCityID,ym:s:clientID,ym:s:goalsID,ym:s:<attribution>TrafficSource,ym:s:<attribution>AdvEngine,ym:s:<attribution>ReferalSource,ym:s:<attribution>SearchEngine,ym:s:<attribution>SocialNetwork,ym:s:<attribution>SocialNetworkProfile,ym:s:referer,ym:s:<attribution>DirectClickOrder,ym:s:<attribution>DirectBannerGroup,ym:s:<attribution>DirectPlatformType,ym:s:<attribution>DirectPlatform,ym:s:UTMCampaign,ym:s:UTMContent,ym:s:UTMMedium,ym:s:UTMSource,ym:s:UTMTerm,ym:s:hasGCLID,ym:s:deviceCategory,ym:s:mobilePhoneModel,ym:s:operatingSystem,ym:s:browser,ym:s:screenWidth,ym:s:screenHeight",
     attribution = null, //"lastsign",
     request_id = null,//84854590,
     counter_id = 55130254,
-*/
-    token = ya_token,
+//*/
+    
     
     raw_params = [
 		token = token,
@@ -40,7 +41,7 @@ let
     // Начальное форматирование параметров
     Param = [
         Transformations = [
-            method = Default,
+            method = Self, //Default,
             request_id = List,
             source = Self, //Default,
             date1 = Date,
@@ -153,14 +154,13 @@ let
         _request_id = [
             Name = "ID запроса",
             AllowedValues = 
-                let all_table = #table( _type_table, {
-                    {null, "Не использовать"},
-                    {"all", "Выбрать все"}
-                }),
-                rest = Table.RenameColumns(
+                let null_table = #table( _type_table, {{0, "Не использовать"}}),
+                all_table = #table( _type_table, {{"all", "Выбрать все"}}),
+                all = Source("list"),
+                rest_table = Table.RenameColumns(
                     Table.SelectColumns(
                         Table.CombineColumns(
-                            Source("list"),
+                            all,
                             {"date1", "date2", "source", "attribution"}, 
                             Combiner.CombineTextByEachDelimiter({" - ", " ", " "}, QuoteStyle.None),
                             "Описание"
@@ -169,8 +169,7 @@ let
                     )
                     ,{{"request_id", "Допустимое значение"}}
                 )
-            in  if trans[request_id] = null then all_table
-                else all_table & rest 
+            in  if Table.IsEmpty(all) then null_table else  all_table & null_table & rest_table
         ],
         _source = [
             Name = "Отчёт",
@@ -188,6 +187,12 @@ let
                 {"created", "создан"},
                 {"cleaned_by_user", "очищен пользователем"},
                 {"cleaned_automatically_as_too_old", "очищен автоматически"}
+            })
+        ],
+        _token = [
+            Name = "Токен",
+            AllowedValues = #table( _type_table, {
+                {"https://yogabi.ru/services/yauth/", "Инструкция для получения токена"}
             })
         ],
         _yesterday = Date.AddDays(Date.From(DateTime.FixedLocalNow()),-1),
@@ -212,9 +217,9 @@ let
         // проверяет допустимо ли значение параметра
         _check_val = (param, val) => 
             let allowed = _getAllowedTable(param)
-            in  if val = null and param <> "request_id" then false
-                else 
-                if param = "date1" then val <= Date.ToText(_yesterday,Param[_date_format]) // лучше сравнивать даты, а не текстовое представление
+            in  if val = null then false
+                else if param = "token" then true
+                else if param = "date1" then val <= Date.ToText(_yesterday,Param[_date_format]) // лучше сравнивать даты, а не текстовое представление
                 else if param = "date2" then val >= trans[date1]
                 else if allowed = null then true 
                 else List.ContainsAll( 
@@ -224,7 +229,8 @@ let
         // генерирует таблицу с допустимыми значениями
         _getHelp = (param) => let
             allowed = _getAllowedTable(param{1}),
-            quotes = Table.TransformColumns(allowed, {"Допустимое значение", each if Value.Is(_, type text) then Text.Format("""#[val]""",[val = _]) else _}),
+            quotes = 
+                Table.TransformColumns(allowed, {"Допустимое значение", each if not(List.Contains({"token","date1","date2"},param{1})) and Value.Is(_, type text) then Text.Format("""#[val]""",[val = _]) else _}),
             add_param_name = Table.AddColumn( quotes, "Параметр", each param{1}, type text ),
             add_param_index =
                 Table.AddColumn(
@@ -245,11 +251,12 @@ let
                 ),
             error_table =
                 // если не указан токен, то получаем токен
-                if trans[token] = null then {"Инструкция для получения токена:", "https://yogabi.ru/services/yauth/"}
+                if trans[token] = null then _getHelp({1, "token"})
                 // если не указан счетчик, то предлагаем доступные
-                else if trans[counter_id] = null or not( _check_val("counter_id", trans[counter_id]) ) then _getHelp({2, "counter_id"})
+                else if trans[counter_id] = null or not(_check_val("counter_id", trans[counter_id])) then _getHelp({2, "counter_id"})
                 // если тип запроса не указан, предлагаем варианты
-                else if trans[method] = null then _getHelp({3, "method"})
+                else if trans[request_id] = null then _getHelp({List.PositionOf( rfn, "request_id" )+1, "request_id"}) 
+                else if trans[method] = null then _getHelp({List.PositionOf( rfn, "method" )+1, "method"})
                 // если тип запроса - список запросов логов, то остальные параметры проверять не нужно
                 else if trans[method] = "list" then _blank_table
                 // если указан идентификатор запроса, подходящий тип запроса, но такой идентификатор не найден
@@ -257,11 +264,11 @@ let
                 else if List.Contains({"create","evaluate"},trans[method]) then if errors = null then null else Table.Combine(List.RemoveRange(errors,List.PositionOf( rfn, "request_id" ),1))
                 else if trans[request_id] <> null 
                     and List.Contains({ "info", "download", "clean", "cancel" }, trans[method] ) 
-                    and not( _check_val("request_id", trans[request_id]) ) then _getHelp({4, "request_id"})
+                    and not( _check_val("request_id", trans[request_id]) ) then _getHelp({List.PositionOf( rfn, "request_id" )+1, "request_id"})
                 else Table.Combine(errors)
-            in  //errors
+            in  //errors/*
                 if Table.IsEmpty(error_table) then error "Нет ошибок" 
-                else Table.ReorderColumns(error_table, {"Позиция", "Параметр", "Допустимое значение", "Описание"})
+                else Table.ReorderColumns(error_table, {"Позиция", "Параметр", "Допустимое значение", "Описание"})//*/
     ],
     errors = Doc[getErrors](trans),
 
@@ -315,7 +322,7 @@ let
     url = Text.Format("https://api-metrika.yandex.net/management/v1/counter/#[counterId]", [counterId = Text.From(counter_id)]), 
 
     Headers = [
-        #"Authorization" = "Bearer " & token,
+        #"Authorization" = "Bearer " & trans[token],
         #"Accept-Language" = "ru",
         #"Accept-Encoding" = "gzip"
     ],
@@ -377,7 +384,8 @@ let
 
 
         
-    return = try errors otherwise try
+    return = //errors /*
+        try errors otherwise try
         if trans[method] = "list" then
             Source("list")
         else if trans[method] = "create" then
@@ -416,6 +424,6 @@ let
                     result
                 else "Нет подходящих для загрузки запросов"
         else null
-        otherwise if List.Contains("clean","cancel",trans[method]) then "Запросы удалены" else "Неизвестная ошибка"
+        otherwise if List.Contains("clean","cancel",trans[method]) then "Запросы удалены" else "Неизвестная ошибка"//*/
 in
     return
