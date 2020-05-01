@@ -141,7 +141,7 @@ let
         ],
         _method = [
             Name = "Тип запроса",
-            AllowedValues = #table( _type_table, {
+            AllowedValues = let base = #table( _type_table, {
                 {"list", "Список запросов логов"}, // https://yandex.ru/dev/metrika/doc/api2/logs/queries/getlogrequests-docpage/
                 //{"evaluate", "Возможность создания запроса"}, // https://yandex.ru/dev/metrika/doc/api2/logs/queries/evaluate-docpage/
                 {"info", "Информация о запросе логов"}, // https://yandex.ru/dev/metrika/doc/api2/logs/queries/getlogrequest-docpage/
@@ -149,7 +149,7 @@ let
                 {"clean", "Удаление обработанного запроса"}, // https://yandex.ru/dev/metrika/doc/api2/logs/queries/clean-docpage/
                 {"cancel", "Отмена обработки запроса"}, // https://yandex.ru/dev/metrika/doc/api2/logs/queries/cancel-docpage/
                 {"create", "Создание запроса"} // https://yandex.ru/dev/metrika/doc/api2/logs/queries/createlogrequest-docpage/
-            })
+            }) in base
         ],
         _request_id = [
             Name = "ID запроса",
@@ -230,7 +230,14 @@ let
         _getHelp = (param) => let
             allowed = _getAllowedTable(param{1}),
             quotes = 
-                Table.TransformColumns(allowed, {"Допустимое значение", each if not(List.Contains({"token","date1","date2"},param{1})) and Value.Is(_, type text) then Text.Format("""#[val]""",[val = _]) else _}),
+                Table.TransformColumns(
+                    allowed, 
+                    {"Допустимое значение", 
+                        each if not(List.Contains({"token","date1","date2","fields"},param{1})) 
+                            and Value.Is(_, type text) then 
+                                Text.Format("""#[val]""",[val = _]) 
+                        else _}
+                ),
             add_param_name = Table.AddColumn( quotes, "Параметр", each param{1}, type text ),
             add_param_index =
                 Table.AddColumn(
@@ -393,7 +400,7 @@ let
                 if result = null then Source("create") 
                 else try Table.SingleRow(result) otherwise result
         else if trans[method]  = "info" then
-            let result = if trans[request_id] = null then Requests[Same] else Requests[ID] in 
+            let result = if trans[request_id] = null or trans[request_id] = 0 then Requests[Same] else Requests[ID] in 
                 if result = null then "Запрос не найден"
                 else try Table.SingleRow(result) otherwise result
         else if trans[method] = "clean" then
@@ -412,7 +419,7 @@ let
                 else Requests[Created](Requests[ID])
             in if requests <> null then List.Transform(requests, each Source("cancel",_)) else "Нечего отменять"
         else if trans[method] = "download" then
-            let result = if trans[request_id] = null then Requests[Same] else Requests[ID], 
+            let result = if trans[request_id] = null or trans[request_id] = 0 then Requests[Same] else Requests[ID], 
                 processed = Requests[Processed]( result )
             in 
                 if processed <> null then 
