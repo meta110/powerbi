@@ -233,7 +233,7 @@ let
                 Table.TransformColumns(
                     allowed, 
                     {"Допустимое значение", 
-                        each if not(List.Contains({"token","date1","date2","fields"},param{1})) 
+                        each if not(List.Contains({"token","date1","date2"},param{1})) 
                             and Value.Is(_, type text) then 
                                 Text.Format("""#[val]""",[val = _]) 
                         else _}
