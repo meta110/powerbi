@@ -380,8 +380,8 @@ let
             All,
             each List.Contains( trans[request_id], [request_id] )
         )),
-        Processed = (optional requests) => Status( "processed", requests),
-        Created = (optional requests) => Status( "created", requests),
+        Processed = (requests) => Status( "processed", requests),
+        Created = (requests) => Status( "created", requests),
         Status = ( status, optional requests ) => _no_empty(Table.SelectRows(
             if requests = null then All else requests,
             each [status] = status
@@ -400,12 +400,12 @@ let
                 if result = null then Source("create") 
                 else try Table.SingleRow(result) otherwise result
         else if trans[method]  = "info" then
-            let result = if trans[request_id] = null or trans[request_id] = 0 then Requests[Same] else Requests[ID] in 
+            let result = if List.IsEmpty(trans[request_id]) or List.Single(trans[request_id]) = 0 then Requests[Same] else Requests[ID] in 
                 if result = null then "Запрос не найден"
                 else try Table.SingleRow(result) otherwise result
         else if trans[method] = "clean" then
             let c_requests = 
-                if trans[request_id] = "all" then Requests[Processed]() 
+                if List.Single(trans[request_id]) = "all" then Requests[Processed](Requests[All]) 
                 else Requests[Processed](Requests[ID])
             in if c_requests <> null then //Table.Combine( 
                     List.Transform(
@@ -415,17 +415,26 @@ let
                 else "Нечего удалять: идентификатор запроса не указан или подходящие для удаления запросы не найдены"
         else if trans[method] = "cancel" then
             let requests = 
-                if trans[request_id] = "all" then Requests[Created]() 
+                if List.Single(trans[request_id]) = "all" then Requests[Created](Requests[All]) 
                 else Requests[Created](Requests[ID])
             in if requests <> null then List.Transform(requests, each Source("cancel",_)) else "Нечего отменять"
         else if trans[method] = "download" then
-            let result = if trans[request_id] = null or trans[request_id] = 0 then Requests[Same] else Requests[ID], 
+            let result = if List.IsEmpty(trans[request_id]) or List.Single(trans[request_id]) = 0 then Requests[Same] else Requests[ID], 
                 processed = Requests[Processed]( result )
             in 
                 if processed <> null then 
-                    Table.Combine(List.Transform(Table.ToRecords(processed), (request) =>
-                        Table.Combine(List.Transform(request[parts], (part) => Source("download", request[request_id], part[part_number])))
-                    ))
+                    //*
+                    Table.Combine(
+                        List.Transform(
+                            Table.ToRecords(processed), 
+                            (req) => Table.Combine(
+                                List.Transform(
+                                    req[parts], 
+                                    (part) => Source("download", req[request_id], part[part_number])
+                                )
+                            )
+                        )
+                    )//*/
                 else if result <> null then 
                     //try Table.SingleRow(result) otherwise 
                     result
@@ -433,4 +442,5 @@ let
         else null
         otherwise if List.Contains("clean","cancel",trans[method]) then "Запросы удалены" else "Неизвестная ошибка"//*/
 in
+    //Requests[Processed](Requests[Same]) 
     return
