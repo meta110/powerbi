@@ -26,8 +26,8 @@ let
             //"AdGroupId", //ID группы объявлений
             //"AdGroupName", //Название группы объявлений
             //"AdId", //ID объявления
-            //"AdNetworkType", //Тип площадки (поиск, сети) не работает с SEARCH_QUERY_PERFORMANCE_REPORT
-            "Age", //Возрастная группа
+            //"AdNetworkType", //Тип площадки
+            //"Age", //Возрастная группа
             //"AudienceTargetId", //ID условия нацеливания на аудиторию
             //"AvgClickPosition", //Средняя позиция клика
             //"AvgCpc", //Средняя стоимость клика
@@ -40,7 +40,7 @@ let
             "Bounces", //Кол-во отказов
             "CampaignId", //ID кампании
             "CampaignName", //Название Кампании
-            "CampaignType", //Тип кампании
+            //"CampaignType", //Тип кампании
             //"CarrierType", //Тип связи
             "Clicks", //Кол-во кликов
             //"ClickType", //Место клика
@@ -58,25 +58,25 @@ let
             //"Device", //Тип устройства
             //"DynamicTextAdTargetId", //ID нацеливания динамического объявления
             //"ExternalNetworkName", //Название внешней сети
-            "Gender", //Пол
+            //"Gender", //Пол
             //"GoalsRoi", //ROI
             //"ImpressionReach", //Кол-во уникальных пользователей
             "Impressions", //Кол-во показов
             //"ImpressionShare", //Доля выигранных аукционов
             //"Keyword", //Текст ключевой фразы
-            //"LocationOfPresenceId", //ID региона местонахождения
+            "LocationOfPresenceId", //ID региона местонахождения
             "LocationOfPresenceName", //Название региона местонахождения
             //"MatchedKeyword", //Подобранная фраза
             //"MatchType", //Тип соответствия фразе
-            "MobilePlatform", //Тип мобильной платформы
+            //"MobilePlatform", //Тип мобильной платформы
             //"Month", //Месяц
-            "Placement", //Название площадки
+            //"Placement", //Название площадки
             //"Profit", //Прибыль
             //"Quarter", //Квартал
             //"Query", //Запрос
             //"Revenue", //Доход
             //"RlAdjustmentId", //ID условия корректировки ставок
-            "Sessions", //Кол-во визитов
+            //"Sessions", //Кол-во визитов
             //"Slot", //Блок показа
             //"SmartBannerFilterId", //ID фильтра смарт-баннеров
             //"TargetingLocationId", //ID региона таргетинга
@@ -191,10 +191,76 @@ in
                 Documentation.SampleValues = {DateTime.Date(DateTime.LocalNow() - 1)}
             ]
         ),
-        optional fields as (type any
+        optional fields as (type {text}
             meta [
                 Documentation.FieldCaption = "Поля отчета в списке или строкой через запятую:",
-                Documentation.FieldDescription = "Выберите допустимые поля для отчета CUSTOM_REPORT https://yandex.ru/dev/direct/doc/reports/fields-list-docpage/ #(cr)Можно передавать в виде списка или в строку с разделителями, например, через запятую"
+                Documentation.FieldDescription = "Выберите допустимые поля для отчета CUSTOM_REPORT https://yandex.ru/dev/direct/doc/reports/fields-list-docpage/ #(cr)Можно передавать в виде списка или в строку с разделителями, например, через запятую",
+                Documentation.AllowedValues = { //снимайте комментарии с ненужных полей и добавляйте комментарии к нужным
+            "AdFormat", //Формат объявления
+            "AdGroupId", //ID группы объявлений
+            "AdGroupName", //Название группы объявлений
+            "AdId", //ID объявления
+            "AdNetworkType", //Тип площадки
+            "Age", //Возрастная группа
+            "AudienceTargetId", //ID условия нацеливания на аудиторию
+            "AvgClickPosition", //Средняя позиция клика
+            "AvgCpc", //Средняя стоимость клика
+            "AvgCpm", //Средняя стоимость тыс. показов
+            "AvgImpressionFrequency", //Средняя частота показов одному пользователю
+            "AvgImpressionPosition", //Средняя позиция показа
+            "AvgPageviews", //Средняя глубина просмотра
+            "AvgTrafficVolume", //Средний объем трафика
+            "BounceRate", //Доля отказов
+            "Bounces", //Кол-во отказов
+            "CampaignId", //ID кампании
+            "CampaignName", //Название Кампании
+            "CampaignType", //Тип кампании
+            "CarrierType", //Тип связи
+            "Clicks", //Кол-во кликов
+            "ClickType", //Место клика
+            "ConversionRate", //Конверсия в целевой визит
+            "Conversions", //Кол-во целевых визитов
+            "CostPerConversion", //CPC
+            "Criteria", //Условие показа (авто)
+            "CriteriaId", //ID условия показа (авто)
+            "CriteriaType", //Тип условия показа (авто)
+            "Criterion", //Назв. условия показа
+            "CriterionId", //ID условия показа
+            "CriterionType", //Тип условия показа
+            "Ctr", //CTR
+            "Date", //Дата
+            "Device", //Тип устройства
+            "DynamicTextAdTargetId", //ID нацеливания динамического объявления
+            "ExternalNetworkName", //Название внешней сети
+            "Gender", //Пол
+            "GoalsRoi", //ROI
+            "ImpressionReach", //Кол-во уникальных пользователей
+            "Impressions", //Кол-во показов
+            "ImpressionShare", //Доля выигранных аукционов
+            "Keyword", //Текст ключевой фразы
+            "LocationOfPresenceId", //ID региона местонахождения
+            "LocationOfPresenceName", //Название региона местонахождения
+            "MatchedKeyword", //Подобранная фраза
+            "MatchType", //Тип соответствия фразе
+            "MobilePlatform", //Тип мобильной платформы
+            "Month", //Месяц
+            "Placement", //Название площадки
+            "Profit", //Прибыль
+            "Quarter", //Квартал
+            "Query", //Запрос
+            "Revenue", //Доход
+            "RlAdjustmentId", //ID условия корректировки ставок
+            "Sessions", //Кол-во визитов
+            "Slot", //Блок показа
+            "SmartBannerFilterId", //ID фильтра смарт-баннеров
+            "TargetingLocationId", //ID региона таргетинга
+            "TargetingLocationName", //Название региона таргетинга
+            "Week", //Неделя
+            "WeightedCtr", //Взвешенные CTR
+            "WeightedImpressions", //Взвешенные показы
+            "Year", //Год
+            "Cost" //Стоимость кликов  
+        }
             ]
         ),
         optional reportName as (type text 
