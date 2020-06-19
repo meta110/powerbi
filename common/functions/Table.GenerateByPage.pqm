@@ -1,4 +1,5 @@
-	Table.GenerateByPage = (getNextPage as function) as table =>
+let
+  Table.GenerateByPage = (getNextPage as function) as table =>
     let        
         listOfPages = List.Generate(
             () => getNextPage(null),            // get the first page of data
@@ -19,3 +20,5 @@
                 Table.ExpandTableColumn(tableOfPages, "Column1", Table.ColumnNames(firstRow[Column1])),
                 Value.Type(firstRow[Column1])
             )
+in
+	Table.GenerateByPage
