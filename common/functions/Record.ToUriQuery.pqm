@@ -1,3 +1,4 @@
+let
     Record.ToUriQuery = (r as record, optional sep as text ) =>
         let
             sep = if sep = null then "," else sep,
@@ -11,3 +12,5 @@
             apply = Record.TransformFields(r,tl)
         in
             apply
+in
+    Record.ToUriQuery
