@@ -1,8 +1,7 @@
 let
     // table should be an actual Table.Type, or a List.Type of Records
-    Table.ChangeType = (table, optional tableType as type) as nullable table =>
+    Table.ChangeType = (table, tableType as type) as nullable table =>
         // we only operate on table types
-        if tableType = null then table else
         if (not Type.Is(tableType, type table)) then error "type argument should be a table type" else
         // if we have a null value, just return it
         if (table = null) then table else
