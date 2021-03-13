@@ -1,7 +1,8 @@
 // работа по API v5 с сервисом Reports https://yandex.ru/dev/direct/doc/reports/reports-docpage/
 // по-умолчанию работает с отчетом CUSTOM_REPORT. Подробнее про типы отчетов https://yandex.ru/dev/direct/doc/reports/type-docpage/
 // если хотите работать с другими отчетами, настройте переменную Reports
-let
+let 
+    //Source = 1,
     stat = (
         optional beginDate as date, // дата начала интервала
         optional endDate as date, // дата окончания интервала
@@ -10,15 +11,38 @@ let
         optional clientLogin as text, // логин клиента (обязателен для агентских аккаунтов)
         optional tokenYandexMetrika as text // токен доступа к Яндекс можно получить по ссылке https://oauth.yandex.ru/authorize?response_type=token&client_id=764f4af41256427ba87965a7ed31ea3d
     ) =>
-
 let
 
+    ////////////////////////////////
+    // Настройки параметров отчёта//
+    ////////////////////////////////
+    
     tokenYandexMetrika = 
         if tokenYandexMetrika <> null 
         then tokenYandexMetrika 
         else "", // укажите здесь свой токен в виде строки, чтобы использовать его постоянно
         //else token_parameter,// либо вставьте ссылку на внешний параметр, в котором записан токен
-	
+
+    // по-умолчанию дата окончания отчета - СЕГОДНЯ
+    endDate = if endDate = null then Date.From(DateTime.LocalNow()) else endDate,
+    // по-умолчанию дата начала отчета - 30 дней назад
+    beginDate = if beginDate = null then Date.AddDays(endDate,-30) else beginDate,
+
+    Reports = [
+		FieldNames = fields,
+		SelectionCriteria = [
+			DateFrom = Date.ToText(beginDate,"yyyy-MM-dd"),//"2020-01-04",
+			DateTo = Date.ToText(endDate,"yyyy-MM-dd")//"2020-01-10"
+		],
+
+   	    ReportType = "CUSTOM_REPORT",
+		//ReportType = "SEARCH_QUERY_PERFORMANCE_REPORT",
+   	    DateRangeType = "CUSTOM_DATE",
+   	    Format = "TSV", // CSV, разделенный табуляцией
+   	    IncludeVAT = "YES", // учитывать НДС
+        IncludeDiscount = "YES" // учитывать скидки
+	],
+
     fields = 
         if fields = null // если поля не заданы - использовать поля из списка
         then { //снимайте комментарии с ненужных полей и добавляйте комментарии к нужным
@@ -87,12 +111,8 @@ let
             //"Year", //Год
             "Cost" //Стоимость кликов  
         } // если поля не заданы, беру из списка
-        else if Value.Is(fields, type list) 
-        then fields // если тип данных - список, то беру его в неизменном виде
-        else List.Select(Text.SplitAny(fields,"#(tab) ,;.|"), each _ <> ""), // предполагаю, что это строка, и нарезаю в список по разделителям: табуляция, пробел, запятая, точка с запятой, точка, пайп - добавьте любые другие
-
-    endDate = if endDate = null then Date.From(DateTime.LocalNow()) else endDate,//#date(2020,1,1),
-    beginDate = if beginDate = null then Date.AddDays(endDate,-30) else beginDate,//#date(2020,1,20),
+        else //перевожу список выбранных полей с русского на английский
+            Table.SelectRows( Fields, each List.Contains( fields, [rus] ))[eng], 
     
     header = [
         #"Authorization" = "Bearer " & tokenYandexMetrika,
@@ -113,23 +133,7 @@ let
         #"502" = "502: Время обработки запроса превысило серверное ограничение"
     ],
     
-    Reports = [
-		FieldNames = List.Sort(fields), //Text.Split(Text.Replace(fields, " ", ""),","),
-		/*OrderBy = {[  
-            Field = "Date"
-        ]},*/
-		SelectionCriteria = [
-			DateFrom = Date.ToText(beginDate,"yyyy-MM-dd"),//"2020-01-04",
-			DateTo = Date.ToText(endDate,"yyyy-MM-dd")//"2020-01-10"
-		],
-		//ReportName = reportname,
-   	    ReportType = "CUSTOM_REPORT",
-		//ReportType = "SEARCH_QUERY_PERFORMANCE_REPORT",
-   	    DateRangeType = "CUSTOM_DATE",
-   	    Format = "TSV", // CSV, разделенный табуляцией
-   	    IncludeVAT = "YES", // учитывать НДС
-        IncludeDiscount = "YES" // учитывать скидки
-	],
+
  
     //основная функция, которая получает ответ от сервера
     DirectAPI2 = (headers as record, fields as record, IsRetry as logical) =>
@@ -171,7 +175,7 @@ let
 			) 
         else if metadata[Response.Status] >= 400 then //если была ошибка, сразу возвращаю ошибку
 			Json.Document(test)[error]
-	else #table( // генерирую таблицу с запрошенными полями в каждом из которых будет указан текущий статус запроса
+		else #table( // генерирую таблицу с запрошенными полями в каждом из которых будет указан текущий статус запроса
             fields, { 
                 List.Repeat({ 
                     Record.Field( ResponseStatuses, Text.From( metadata[Response.Status])) &
@@ -179,7 +183,6 @@ let
                 }, List.Count(fields))
             }
         )
-    
 in
 	report3 meta metadata,
     // документация к фукнции
@@ -202,72 +205,7 @@ in
             meta [
                 Documentation.FieldCaption = "Поля отчета в списке или строкой через запятую:",
                 Documentation.FieldDescription = "Выберите допустимые поля для отчета CUSTOM_REPORT https://yandex.ru/dev/direct/doc/reports/fields-list-docpage/ #(cr)Можно передавать в виде списка или в строку с разделителями, например, через запятую",
-                Documentation.AllowedValues = { //снимайте комментарии с ненужных полей и добавляйте комментарии к нужным
-            "AdFormat", //Формат объявления
-            "AdGroupId", //ID группы объявлений
-            "AdGroupName", //Название группы объявлений
-            "AdId", //ID объявления
-            "AdNetworkType", //Тип площадки
-            "Age", //Возрастная группа
-            "AudienceTargetId", //ID условия нацеливания на аудиторию
-            "AvgClickPosition", //Средняя позиция клика
-            "AvgCpc", //Средняя стоимость клика
-            "AvgCpm", //Средняя стоимость тыс. показов
-            "AvgImpressionFrequency", //Средняя частота показов одному пользователю
-            "AvgImpressionPosition", //Средняя позиция показа
-            "AvgPageviews", //Средняя глубина просмотра
-            "AvgTrafficVolume", //Средний объем трафика
-            "BounceRate", //Доля отказов
-            "Bounces", //Кол-во отказов
-            "CampaignId", //ID кампании
-            "CampaignName", //Название Кампании
-            "CampaignType", //Тип кампании
-            "CarrierType", //Тип связи
-            "Clicks", //Кол-во кликов
-            "ClickType", //Место клика
-            "ConversionRate", //Конверсия в целевой визит
-            "Conversions", //Кол-во целевых визитов
-            "CostPerConversion", //CPC
-            "Criteria", //Условие показа (авто)
-            "CriteriaId", //ID условия показа (авто)
-            "CriteriaType", //Тип условия показа (авто)
-            "Criterion", //Назв. условия показа
-            "CriterionId", //ID условия показа
-            "CriterionType", //Тип условия показа
-            "Ctr", //CTR
-            "Date", //Дата
-            "Device", //Тип устройства
-            "DynamicTextAdTargetId", //ID нацеливания динамического объявления
-            "ExternalNetworkName", //Название внешней сети
-            "Gender", //Пол
-            "GoalsRoi", //ROI
-            "ImpressionReach", //Кол-во уникальных пользователей
-            "Impressions", //Кол-во показов
-            "ImpressionShare", //Доля выигранных аукционов
-            "Keyword", //Текст ключевой фразы
-            "LocationOfPresenceId", //ID региона местонахождения
-            "LocationOfPresenceName", //Название региона местонахождения
-            "MatchedKeyword", //Подобранная фраза
-            "MatchType", //Тип соответствия фразе
-            "MobilePlatform", //Тип мобильной платформы
-            "Month", //Месяц
-            "Placement", //Название площадки
-            "Profit", //Прибыль
-            "Quarter", //Квартал
-            "Query", //Запрос
-            "Revenue", //Доход
-            "RlAdjustmentId", //ID условия корректировки ставок
-            "Sessions", //Кол-во визитов
-            "Slot", //Блок показа
-            "SmartBannerFilterId", //ID фильтра смарт-баннеров
-            "TargetingLocationId", //ID региона таргетинга
-            "TargetingLocationName", //Название региона таргетинга
-            "Week", //Неделя
-            "WeightedCtr", //Взвешенные CTR
-            "WeightedImpressions", //Взвешенные показы
-            "Year", //Год
-            "Cost" //Стоимость кликов  
-        }
+                Documentation.AllowedValues = Fields[rus]
             ]
         ),
         optional reportName as (type text 
@@ -291,6 +229,76 @@ in
                 Documentation.SampleValues = {"05dd3dd84ff948fdae2bc4fb91f13e22bb1f289ceef0037"}
             ]
         )
-    ) as text
-in
-    Value.ReplaceType(stat, fnType)
+    ) as text,
+
+    Fields = #table(
+		type table [ eng = text, rus = text ], {
+			{"AdFormat", "Формат объявления"},
+			{"AdGroupId", "ID группы объявлений"},
+			{"AdGroupName", "Название группы объявлений"},
+			{"AdId", "ID объявления"},
+			{"AdNetworkType", "Тип площадки"},
+			{"Age", "Возрастная группа"},
+			{"AudienceTargetId", "ID условия нацеливания на аудиторию"},
+			{"AvgClickPosition", "Средняя позиция клика"},
+			{"AvgCpc", "Средняя стоимость клика"},
+			{"AvgCpm", "Средняя стоимость тыс. показов"},
+			{"AvgImpressionFrequency", "Средняя частота показов одному пользователю"},
+			{"AvgImpressionPosition", "Средняя позиция показа"},
+			{"AvgPageviews", "Средняя глубина просмотра"},
+			{"AvgTrafficVolume", "Средний объем трафика"},
+			{"BounceRate", "Доля отказов"},
+			{"Bounces", "Кол-во отказов"},
+			{"CampaignId", "ID кампании"},
+			{"CampaignName", "Название Кампании"},
+			{"CampaignType", "Тип кампании"},
+			{"CarrierType", "Тип связи"},
+			{"Clicks", "Кол-во кликов"},
+			{"ClickType", "Место клика"},
+			{"ConversionRate", "Конверсия в целевой визит"},
+			{"Conversions", "Кол-во целевых визитов"},
+			{"CostPerConversion", "CPC"},
+			{"Criteria", "Условие показа (авто)"},
+			{"CriteriaId", "ID условия показа (авто)"},
+			{"CriteriaType", "Тип условия показа (авто)"},
+			{"Criterion", "Назв. условия показа"},
+			{"CriterionId", "ID условия показа"},
+			{"CriterionType", "Тип условия показа"},
+			{"Ctr", "CTR"},
+			{"Date", "Дата"},
+			{"Device", "Тип устройства"},
+			{"DynamicTextAdTargetId", "ID нацеливания динамического объявления"},
+			{"ExternalNetworkName", "Название внешней сети"},
+			{"Gender", "Пол"},
+			{"GoalsRoi", "ROI"},
+			{"ImpressionReach", "Кол-во уникальных пользователей"},
+			{"Impressions", "Кол-во показов"},
+			{"ImpressionShare", "Доля выигранных аукционов"},
+			{"Keyword", "Текст ключевой фразы"},
+			{"LocationOfPresenceId", "ID региона местонахождения"},
+			{"LocationOfPresenceName", "Название региона местонахождения"},
+			{"MatchedKeyword", "Подобранная фраза"},
+			{"MatchType", "Тип соответствия фразе"},
+			{"MobilePlatform", "Тип мобильной платформы"},
+			{"Month", "Месяц"},
+			{"Placement", "Название площадки"},
+			{"Profit", "Прибыль"},
+			{"Quarter", "Квартал"},
+			{"Query", "Запрос"},
+			{"Revenue", "Доход"},
+			{"RlAdjustmentId", "ID условия корректировки ставок"},
+			{"Sessions", "Кол-во визитов"},
+			{"Slot", "Блок показа"},
+			{"SmartBannerFilterId", "ID фильтра смарт-баннеров"},
+			{"TargetingLocationId", "ID региона таргетинга"},
+			{"TargetingLocationName", "Название региона таргетинга"},
+			{"Week", "Неделя"},
+			{"WeightedCtr", "Взвешенные CTR"},
+			{"WeightedImpressions", "Взвешенные показы"},
+			{"Year", "Год"},
+			{"Cost", "Рекламный бюджет"}
+		}
+	),
+    Source = Value.ReplaceType(stat, fnType)
+in 
+	Source
