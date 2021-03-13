@@ -171,7 +171,14 @@ let
 			) 
         else if metadata[Response.Status] >= 400 then //если была ошибка, сразу возвращаю ошибку
 			Json.Document(test)[error]
-		else Record.Field(ResponseStatuses,Text.From(metadata[Response.Status]))
+	else #table( // генерирую таблицу с запрошенными полями в каждом из которых будет указан текущий статус запроса
+            fields, { 
+                List.Repeat({ 
+                    Record.Field( ResponseStatuses, Text.From( metadata[Response.Status])) &
+                        " Попробуйте обновить отчет через некоторое время."
+                }, List.Count(fields))
+            }
+        )
     
 in
 	report3 meta metadata,
