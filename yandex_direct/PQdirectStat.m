@@ -1,6 +1,6 @@
 // работа по API v5 с сервисом Reports https://yandex.ru/dev/direct/doc/reports/reports-docpage/
 // по-умолчанию работает с отчетом CUSTOM_REPORT. Подробнее про типы отчетов https://yandex.ru/dev/direct/doc/reports/type-docpage/
-// если хотите работать с другими отчетами, настройте переменную Reports
+// если хотите работать с другими отчетами, настройте переменную Reports и внимательно следите за списком запрашиваемых полей
 ///*
 let 
     //Source = 1,
