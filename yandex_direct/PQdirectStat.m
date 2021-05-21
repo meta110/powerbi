@@ -1,7 +1,7 @@
 // работа по API v5 с сервисом Reports https://yandex.ru/dev/direct/doc/reports/reports-docpage/
 // по-умолчанию работает с отчетом CUSTOM_REPORT. Подробнее про типы отчетов https://yandex.ru/dev/direct/doc/reports/type-docpage/
 // если хотите работать с другими отчетами, настройте переменную Reports и внимательно следите за списком запрашиваемых полей
-// совместимость полей проверяется на стороне сервера, поэтому внимательно читайте сообщения об ошибках
+// совместимость полей скрипт не проверяет, поэтому внимательно читайте серверные сообщения об ошибках
 ///*
 let 
     //Source = 1,
@@ -61,6 +61,7 @@ let
             //"AvgClickPosition", //Средняя позиция клика
             //"AvgCpc", //Средняя стоимость клика
             //"AvgCpm", //Средняя стоимость тыс. показов
+	    //"AvgEffectiveBid", //Средняя ставка за клик с учетом всех корректировок
             //"AvgImpressionFrequency", //Средняя частота показов одному пользователю
             //"AvgImpressionPosition", //Средняя позиция показа
             //"AvgPageviews", //Средняя глубина просмотра
@@ -324,6 +325,7 @@ in
     // 1. англоязычное название, которое передается в отчет - менять их нельзя, 
     // 2. перевод названий на русский (так будут называться колонки в отчете и в вызове функции - можно переименовать как угодно
     // 3. колонка будет преобразована к этому типу - если ставите тип отличный от Text.Type, то будьте осторожней
+    // про совместимость полей https://yandex.ru/dev/direct/doc/reports/fields-list.html
 
 	DataFormat = #table(
 		type table [ eng = text, rus = text, type = type ], {
@@ -336,7 +338,8 @@ in
 			{ "AudienceTargetId", "ID условия нацеливания на аудиторию", Text.Type },
 			{ "AvgClickPosition", "Средняя позиция клика", Text.Type },
 			{ "AvgCpc", "Средняя стоимость клика", Text.Type },
-			{ "AvgCpm", "Средняя стоимость тыс. показов", Text.Type },
+			//{ "AvgCpm", "Средняя стоимость тыс. показов", Text.Type }, // не совместимо с CUSTOM_REPORT
+			{ "AvgEffectiveBid", "Средняя ставка за клик с учетом всех корректировок", Text.Type},
 			{ "AvgImpressionFrequency", "Средняя частота показов одному пользователю", Text.Type },
 			{ "AvgImpressionPosition", "Средняя позиция показа", Text.Type },
 			{ "AvgPageviews", "Средняя глубина просмотра", Text.Type },
@@ -365,20 +368,20 @@ in
 			{ "ExternalNetworkName", "Название внешней сети", Text.Type },
 			{ "Gender", "Пол", Text.Type },
 			{ "GoalsRoi", "ROI", Text.Type },
-			{ "ImpressionReach", "Кол-во уникальных пользователей", Text.Type },
+			//{ "ImpressionReach", "Кол-во уникальных пользователей", Text.Type }, // не совместимо с CUSTOM_REPORT
 			{ "Impressions", "Кол-во показов", Int64.Type },
-			{ "ImpressionShare", "Доля выигранных аукционов", Text.Type },
+			//{ "ImpressionShare", "Доля выигранных аукционов", Text.Type }, // не совместимо с CUSTOM_REPORT
 			{ "Keyword", "Текст ключевой фразы", Text.Type },
 			{ "LocationOfPresenceId", "ID региона местонахождения", Text.Type },
 			{ "LocationOfPresenceName", "Название региона местонахождения", Text.Type },
-			{ "MatchedKeyword", "Подобранная фраза", Text.Type },
+			//{ "MatchedKeyword", "Подобранная фраза", Text.Type }, // не совместимо с CUSTOM_REPORT
 			{ "MatchType", "Тип соответствия фразе", Text.Type },
 			{ "MobilePlatform", "Тип мобильной платформы", Text.Type },
 			{ "Month", "Месяц", Text.Type },
 			{ "Placement", "Название площадки", Text.Type },
 			{ "Profit", "Прибыль", Text.Type },
 			{ "Quarter", "Квартал", Text.Type },
-			{ "Query", "Запрос", Text.Type },
+			//{ "Query", "Запрос", Text.Type }, // не совместимо с CUSTOM_REPORT
 			{ "Revenue", "Доход", Text.Type },
 			{ "RlAdjustmentId", "ID условия корректировки ставок", Text.Type },
 			{ "Sessions", "Кол-во визитов", Text.Type },
