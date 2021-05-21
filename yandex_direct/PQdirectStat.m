@@ -293,7 +293,7 @@ in
         ),
         optional fields as (type {text}
             meta [
-                Documentation.FieldCaption = "Поля отчета в списке или строкой через запятую:",
+                Documentation.FieldCaption = "Поля отчета (нужные отметьте галочками):",
                 Documentation.FieldDescription = "Выберите допустимые поля для отчета CUSTOM_REPORT https://yandex.ru/dev/direct/doc/reports/fields-list-docpage/ #(cr)Можно передавать в виде списка или в строку с разделителями, например, через запятую",
                 Documentation.AllowedValues = List.Sort( DataFormat[ rus ] )
             ]
