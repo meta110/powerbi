@@ -239,10 +239,10 @@ let
     ///////////////////////////////////////
 
     // выбираю только те поля, которые есть в отчете
-    DataType = Table.SelectRows(DataFormat[[eng],[type]], each List.Contains(fields, [eng])),
+    DataType = Table.SelectRows( DataFormat[ [ eng ], [ type ] ], each List.Contains( fields, [ eng ] ) ),
 
 	// меняю типы значений в колонках
-	retype = Table.TransformColumnTypes( makeTransform, Table.ToRows(DataType) ),
+	retype = Table.Buffer( Table.TransformColumnTypes( makeTransform, Table.ToRows( DataType ) ) ),
 
 
     ////////////////////////////
