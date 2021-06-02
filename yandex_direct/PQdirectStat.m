@@ -169,15 +169,16 @@ let
 	
 	
 	// распаковываю "нормальный" ответ
-	response = 
+	response = Table.Buffer(
 		Table.PromoteHeaders(
 			Csv.Document(
 				test,
-				List.Count(report_record_field[FieldNames]),
+				List.Count( report_record_field[ FieldNames ] ),
 				"#(tab)"
 			), 
-			[PromoteAllScalars=true]
-		),
+			[ PromoteAllScalars = true ]
+		)
+	),
 
 	
 	ErrorCase = #table(
@@ -196,9 +197,9 @@ let
     
     
     // оставляю только те поля, которые есть отчете
-    ReplaceOnly = Table.SelectRows( ReplaceValues, each List.Contains( fields, [ field ])), 
+    ReplaceOnly = Table.SelectRows( ReplaceValues, each List.Contains( fields, [ field ] ) ), 
     // список уникальных полей, в которых буду производить замены
-    FieldsToReplace = List.Distinct(ReplaceOnly[field]), 
+    FieldsToReplace = List.Distinct( ReplaceOnly[ field ] ), 
     
     // эта функция генерирует список замен для нужного поля
     ReplacesList = ( field as text ) => 
@@ -242,7 +243,7 @@ let
     DataType = Table.SelectRows( DataFormat[ [ eng ], [ type ] ], each List.Contains( fields, [ eng ] ) ),
 
 	// меняю типы значений в колонках
-	retype = Table.Buffer( Table.TransformColumnTypes( makeTransform, Table.ToRows( DataType ) ) ),
+	retype =  Table.TransformColumnTypes( makeTransform, Table.ToRows( DataType ) ) ,
 
 
     ////////////////////////////
