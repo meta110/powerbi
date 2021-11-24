@@ -41,7 +41,7 @@ let
             existingColumns = Table.ColumnNames(reordered),
             removeMissing = Table.SelectRows(omitted, each List.Contains(existingColumns, [Name])),
             primativeTransforms = Table.ToRows(removeMissing),
-            changedPrimatives = Table.TransformColumnTypes(reordered, primativeTransforms),
+            changedPrimatives = Table.TransformColumnTypes(reordered, primativeTransforms, "en-US"),
         
             // Get the list of transforms we'll use for logical types
             logicalColumns = Table.SelectRows(schema, each Type.Is([Type], type logical)),
@@ -132,7 +132,7 @@ let
             transformMap,
 
     GetTransformByType = (_type as type) as function =>
-                if (Type.Is(_type, type number)) then Number.From
+                if (Type.Is(_type, type number)) then (t) => Number.From( t, "en-US")
         else if (Type.Is(_type, type text)) then Text.From
         else if (Type.Is(_type, type date)) then Date.From
         else if (Type.Is(_type, type datetime)) then DateTime.From
