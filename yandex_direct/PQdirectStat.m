@@ -155,8 +155,8 @@ let
 	//с этого момента генерация отчета
 	report_record_field = 
         Reports & [ 
-            ReportName = /*( if reportName = null then "" else reportName )// добавляю диапазон дат к названию отчета, на случай если название не указано
-            & */
+            ReportName = ( if reportName = null then "" else reportName )// добавляю диапазон дат к названию отчета, на случай если название не указано
+            & 
 			Reports[SelectionCriteria][DateFrom] 
             & " - " 
             & Reports[SelectionCriteria][DateTo]
