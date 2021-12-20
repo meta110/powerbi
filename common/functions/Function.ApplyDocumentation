@@ -1,0 +1,250 @@
+let
+
+  masterType = type table [
+    Name = Text.Type, // идентификатор параметра
+    Type = Type.Type, // тип значения параметра
+    Required = Logical.Type, // обязательный
+    Transformation = Function.Type, // функция преобразования значения
+    Default = Any.Type, // значение по-умолчанию
+    Caption = Text.Type, // заголовок параметра
+    Description = Text.Type, // описание параметра
+    Allowed = List.Type, // допустимые значения параметра
+    Sample = List.Type, // список примеров значений
+    MultiLine = Logical.Type, // мультистрочное поле ввода
+    isCode = Logical.Type // заменяет шрифт на код
+  ],
+
+  typeSelf2 = #table( masterType,{
+    /*{
+      null, //Name (text)
+      null, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      null, //Caption (text)
+      null, //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    }*/
+    {
+      "function", //Name (text)
+      type function, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      each _, //Default (any)
+      "Функция", //Caption (text)
+      "Функция, для которой создается документация", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "parameters", //Name (text)
+      type table, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Таблица параметров", //Caption (text)
+      "Таблица с описанием параметров", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "ReturnType", //Name (text)
+      type type, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      type any, //Default (any)
+      "Тип результата", //Caption (text)
+      "Тип значения, возвращаемого функцией", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "Name", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Название", //Caption (text)
+      "Название функции", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "Description", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Описание", //Caption (text)
+      "Описание функции", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "LongDescription", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Длинное описание", //Caption (text)
+      "Длинное описание функции", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "Category", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Категория", //Caption (text)
+      "Категория функции", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "Examples", //Name (text)
+      type table [ Description = text, Code = text, Result = text ], //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Примеры", //Caption (text)
+      "Примеры использования", //Description (text)
+      null, //Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    }
+  }),
+
+	// удаляет из записи поля со значением null
+  // нужна для документации, потому что null - это какое-то значение, которое не нужно присваивать в документацию
+  Record.RemoveNulls = ( r as record ) =>
+		Record.FromTable(
+			Table.SelectRows( 
+				Record.ToTable( r ), 
+				each [ Value ] <> null
+			)
+		)
+	,
+
+  Type.ForFunctionWithParameters = ( 
+    params as table,
+    optional ReturnType as type
+  ) => 
+    if params = null then error "Параметры функции: шаблон таблицы: Name*,Type,Transformation,Default,Caption,Description,Allowed,Sample,MultiLine,isCode"
+    else if not Table.HasColumns( params, { "Name" } ) then error "Параметры функции: Не найдена колонка с параметрами - Name"
+    else if not List.IsDistinct( params[ Name ] ) then error "Параметры функции: Названия параметров должны быть уникальными"
+    else let 
+      required = Table.SelectRows( params, each [ Required ] = true )[ Name ], 
+      optional = List.RemoveMatchingItems( params[ Name ], required ),
+      addMeta = Table.TransformRows( params,
+        each ( [ Type ]? ?? type any ) meta Record.RemoveNulls([
+          Documentation.FieldCaption = [ Caption ]?,
+          Documentation.FieldDescription = [ Description ]?,
+          Documentation.AllowedValues = [ Allowed ]?,
+          Documentation.SampleValues = [ Sample ]?,
+          Formatting.IsMultiLine = [ MultiLine ]?,
+          Formatting.IsCode = [ isCode ]?
+        ])
+      ),
+      asRecord = Record.FromList( addMeta, params[ Name ] ),
+      rearrange = Record.ReorderFields( asRecord, required & optional ),
+      funcType = Type.ForFunction( [
+          ReturnType = ReturnType ?? type any,
+          Parameters = rearrange 
+        ],
+        List.Count( required ) 
+      )
+    in funcType
+  ,
+
+  func3 = ( 
+    optional _function as function,
+    optional parameters as table,
+    optional ReturnType as type,
+    optional Name as text,
+    optional Description as text,
+    optional LongDescription as text,
+    optional Category as text,
+    optional Examples as table
+   ) => 
+    if parameters = null then "Создайте таблицу с описанием параметров по этому шаблону:#(cr,lf)#(cr,lf)" & PrintTableType( masterType )
+    else let
+        required = Table.SelectRows( parameters, each [ Required ] = true )[ Name ], 
+        optional = List.RemoveMatchingItems( parameters[ Name ], required ),
+        _meta = Record.RemoveNulls([
+          Documentation.Name = Name, 
+          Documentation.Description = Description,
+          Documentation.LongDescription = LongDescription,
+          Documentation.Category = Category,
+          Documentation.Examples = Examples
+        ]),
+
+        _typeWithMeta = Type.ForFunctionWithParameters( parameters, ReturnType ) meta _meta,
+        __function = Function.From( _typeWithMeta, ExecuteFunction( parameters, _function ) )
+      in __function
+  ,
+
+  ExecuteFunction = ( parameters, optional _function ) => let
+    _function = _function ?? ( ( t ) => t ) 
+  in ( v ) => let
+      asRecord = Record.FromList( v, Table.Column( parameters, "Name" ) ),
+      asTable = Table.AddColumn( parameters, "Value", 
+        each let 
+          val = Record.FieldOrDefault( asRecord, [ Name ], [ Default ]? ),
+          check = val ?? [ Default ]?
+        in if check = null or [ Transformation ]? = null then check else [ Transformation ]( check ) 
+      ),
+      toRecord = Record.FromTable( Table.SelectRows( asTable, each [ Value ] <> null ) ),
+      execute = _function( toRecord )
+    in execute,
+
+
+  PrintTableType = ( _type as type ) => let 
+    lf = "#(cr,lf)",
+    schema = Table.Schema( Table.FromRows( {}, _type ) ),
+    last = Table.Last(schema) 
+  in Text.Combine({ 
+    "#table( type table [", 
+    Text.Combine(
+      Table.TransformRows(
+        schema,
+        each Text.Format( "#(tab)#[Name] = #[TypeName]", _ )
+      ),
+      "," & lf
+    ),
+    "],{",
+    "#(tab)/*{",
+    Text.Combine(
+      Table.TransformRows(
+        schema,
+        each Text.Format( Text.Combine( { "#(tab,tab)null", " //#[Name] (#[Kind])" }, if _ = last then "" else ","), _ )
+      ),
+      lf
+    ),
+    "#(tab)}*/",
+    "})"
+  }, lf ),
+
+  return = Value.ReplaceType( func3, Type.ForFunctionWithParameters(  typeSelf2, type any ) ) 
+
+in
+  return
