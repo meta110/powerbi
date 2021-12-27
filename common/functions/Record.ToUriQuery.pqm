@@ -1,16 +1,16 @@
-let
-    Record.ToUriQuery = (r as record, optional sep as text ) =>
-        let
-            sep = if sep = null then "," else sep,
-            tabl = Record.ToTable(r),
-            vals = Table.TransformColumns(tabl, {"Value", each
-                if Value.Is( _, type list ) then 
-                    ( v ) => Text.Combine( List.Transform( v, Text.From), sep )
-                else ( v ) => Text.From( v )
-            }),
-            tl = Table.ToRows(vals),
-            apply = Record.TransformFields(r,tl)
-        in
-            apply
+url_parse = (referer) =>
+    let
+        Source = Text.Lower(referer),
+        params = Text.Split(Source,"?"),
+        param = List.Transform(Text.Split(params{1},"&"), rec),
+        rec = (s as text) => let p = Text.Split(s,"=") in try Record.AddField([],p{0},p{1}) otherwise null,
+        combine = try Record.Combine(List.RemoveNulls(param)) otherwise null,
+        host = try Text.BetweenDelimiters(params{0},"/","/",1) otherwise null,
+        result = if host = null or Text.Length(host) = 0 then null
+            else [
+                Host = host,
+                Path = Text.Trim( Text.BetweenDelimiters( params{0}, "/", "#", 2), "/" ),
+                Query = combine
+            ]
 in
-    Record.ToUriQuery
+    result,
