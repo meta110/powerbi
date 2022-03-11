@@ -2,7 +2,7 @@ let
   // АВТОРИЗАЦИЯ
   // вставьте OAuth-токен от вашего аккаунта
   // его можно получить на Полигоне https://yandex.ru/dev/disk/poligon/
-  TOKEN = "AQAAAAA-YxhHAADLW96Ob2A6y0mdoisCeSZoMT0",
+  TOKEN = "...",
 
   // НАСТРОЙКИ API
   // анти-спам задержка между последовательными запросами в секундах
