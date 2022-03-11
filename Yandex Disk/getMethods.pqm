@@ -1,0 +1,156 @@
+let
+  // АВТОРИЗАЦИЯ
+  // вставьте OAuth-токен от вашего аккаунта
+  // его можно получить на Полигоне https://yandex.ru/dev/disk/poligon/
+  TOKEN = "AQAAAAA-YxhHAADLW96Ob2A6y0mdoisCeSZoMT0",
+
+  // НАСТРОЙКИ API
+  // анти-спам задержка между последовательными запросами в секундах
+  DELAY = 0.5,
+  // макс. размер порции данных из документации API
+  PAGE_SIZE = 100,
+  // название поля с данными
+  DATA_FIELD = "items",
+
+  // "БИБЛИОТЕЧНЫЕ" ФУНКЦИИ
+  // загрузчик функций из моего GitHub
+  Function.Library = ( name as text ) => 
+    Expression.Evaluate(
+      Text.FromBinary(
+        Binary.Buffer( 
+          Web.Contents( "https://raw.githubusercontent.com/meta110/powerbi/master/common/functions/", [
+            RelativePath = name & ".pqm"
+            ] )
+        ) 
+      ),
+      #shared
+    ),
+
+  // вставьте ссылку на функцию Table.ChangeType
+  Table.ChangeType = Function.Library( "Table.ChangeType" ),
+
+  // Web.Contents с задержкой
+  DelayWebContents =  Function.InvokeAfter( () => Web.Contents, #duration( 0, 0, 0, DELAY ) ),
+
+  // ЗАПРОС ДАННЫХ
+
+  // убедитесь, что в token находится ваш OAuth token из запроса авторизации
+  Headers = [ 
+    Authorization = "OAuth " & TOKEN,
+    Accept        = "application/json"
+  ],
+
+  // получает порцию данных
+  getPageProto = ( url as text, optional commonQuery as record, optional limit as number ) => let
+    commonQuery = commonQuery ?? [],
+    common = if limit = null then commonQuery else commonQuery & [ limit = Text.From( limit ) ]
+  in
+    ( optional offset as number ) => let
+      response = DelayWebContents(
+        "https://cloud-api.yandex.net", [
+          Headers = Headers,
+          RelativePath = url,
+          Query = common & ( if offset = null then [] else [ offset = Text.From( offset ) ] ),
+          ManualStatusHandling = { 400, 401, 403, 404, 406, 429, 503 }
+        ]
+      ),
+      json = Json.Document( response ),
+      data = Record.FieldOrDefault( json, DATA_FIELD, json ),
+      metadata = Record.RemoveFields( json, DATA_FIELD, MissingField.Ignore ),
+      errors = json[ error ]?
+    in if errors <> null then
+        error Error.Record( json[ error ], json[ message ], json[ description ] )
+      else if json[ offset ]? = null then json 
+      else data meta metadata,
+
+  // ПАГИНАЦИЯ
+
+  // находит и получает следующую страницу
+  // возвращает null, если страниц больше нет
+  getNextPageProto = ( getPage as function ) => ( previous ) => let
+    metadata = Value.Metadata( previous ),
+    offset = metadata[ offset ] + metadata[ limit ]
+  in if metadata[ offset ]? = null or List.IsEmpty( previous ) then null else getPage( offset ),
+
+  // генерирует список всех страниц
+  paginate = ( getPage as function, getNextPage as function ) => List.Generate(
+    () => getPage( ),
+    ( page ) => page <> null,
+    ( page ) => getNextPage( page )
+  ),
+
+  DiskAPI = ( method as text, optional params as record, optional typeForResult as type ) => let
+
+    params = params ?? [],
+    getPage = getPageProto( method, params, PAGE_SIZE ),
+    // собирает все строки в одну страницу
+    allPages = paginate( getPage, getNextPageProto( getPage ) ),
+    rows = List.Combine( allPages ),
+
+    // ПРИВЕДЕНИЕ ДАННЫХ К ТАБЛИЧНОМУ ВИДУ
+    // генерирую таблицу из списка строк и объявляю тип колонок
+    result = if typeForResult = null then rows else Table.ChangeType( rows, typeForResult )
+  in 
+    if List.Count( allPages ) = 1 then List.Single( allPages ) else result,
+
+  // ВСЁ ОСТАЛЬНОЕ ЛУЧШЕ ВЫНЕСТИ В ОТДЕЛЬНЫЙ ЗАПРОС
+
+  // генерация типа таблицы из JSON
+  // просто скопировал пример из документации
+  SampleData = "{#(cr)#(lf)  ""items"": [#(cr)#(lf)    {#(cr)#(lf)      ""antivirus_status"": {},#(cr)#(lf)      ""resource_id"": ""string"",#(cr)#(lf)      ""share"": {#(cr)#(lf)        ""is_root"": true,#(cr)#(lf)        ""is_owned"": true,#(cr)#(lf)        ""rights"": ""string""#(cr)#(lf)      },#(cr)#(lf)      ""file"": ""string"",#(cr)#(lf)      ""size"": 0,#(cr)#(lf)      ""photoslice_time"": ""2022-03-10T14:30:53.246Z"",#(cr)#(lf)      ""_embedded"": {#(cr)#(lf)        ""sort"": ""string"",#(cr)#(lf)        ""items"": [#(cr)#(lf)          {}#(cr)#(lf)        ],#(cr)#(lf)        ""limit"": 0,#(cr)#(lf)        ""offset"": 0,#(cr)#(lf)        ""path"": ""string"",#(cr)#(lf)        ""total"": 0#(cr)#(lf)      },#(cr)#(lf)      ""exif"": {#(cr)#(lf)        ""date_time"": ""2022-03-10T14:30:53.246Z"",#(cr)#(lf)        ""gps_longitude"": {},#(cr)#(lf)        ""gps_latitude"": {}#(cr)#(lf)      },#(cr)#(lf)      ""custom_properties"": {},#(cr)#(lf)      ""media_type"": ""string"",#(cr)#(lf)      ""preview"": ""string"",#(cr)#(lf)      ""type"": ""string"",#(cr)#(lf)      ""mime_type"": ""string"",#(cr)#(lf)      ""revision"": 0,#(cr)#(lf)      ""public_url"": ""string"",#(cr)#(lf)      ""path"": ""string"",#(cr)#(lf)      ""md5"": ""string"",#(cr)#(lf)      ""public_key"": ""string"",#(cr)#(lf)      ""sha256"": ""string"",#(cr)#(lf)      ""name"": ""string"",#(cr)#(lf)      ""created"": ""2022-03-10T14:30:53.246Z"",#(cr)#(lf)      ""modified"": ""2022-03-10T14:30:53.246Z"",#(cr)#(lf)      ""comment_ids"": {#(cr)#(lf)        ""private_resource"": ""string"",#(cr)#(lf)        ""public_resource"": ""string""#(cr)#(lf)      }#(cr)#(lf)    }#(cr)#(lf)  ],#(cr)#(lf)  ""limit"": 0,#(cr)#(lf)  ""offset"": 0#(cr)#(lf)}",
+  json = Json.Document( SampleData ),
+  tableProto = json[items]{0},
+  
+  // генерирует тип для записи
+  tableType = ( t as record ) => let
+    names = Record.FieldNames( t ) 
+  in
+    Record.FromList(
+      List.Transform( 
+        names,
+        each let 
+            value = Record.Field( t, _), 
+            _type = Value.Type( value ),
+            // заметил, что DateTime сохранены в виде текста, преобразую в DateTime
+            _datetime = if _type = type text then try DateTime.From( value ) else [ HasError = true ],
+            __type = 
+              // заметил, что {} в результатах становится строкой, а не записью
+              if value = [] then type text
+              // генерирую тип для колонок с записью
+              else if value is record then 
+                  Type.ForRecord( @tableType( value ), false )
+              // в DateTime преобразовать не получилось, значит, это просто текст
+              else if _datetime[ HasError ] then 
+                _type
+              else type datetime
+          in [ Type = __type, Optional = false ]
+      ),
+      names
+    ),
+  _type = type table Type.ForRecord( tableType( tableProto ), false ),
+
+  /////////
+  // можно использовать любые методы GET из документации
+  // https://yandex.ru/dev/disk/poligon/
+  ////////
+  
+  // пример получения данных в виде таблицы
+  // метод получает список всех файлов диска типа document
+  documents = DiskAPI( 
+    // ссылка на метод API
+    "/v1/disk/resources/files",
+    // параметры метода API 
+    [ media_type = "document" ],
+    // тип таблицы результатов, если результат - таблица 
+    _type 
+  ),
+
+  // добавляю колонку с функцией, которая загрузит выбранный документ
+  download = Table.AddColumn( 
+    documents, 
+    "Download",
+    each () => Web.Contents( DiskAPI( "/v1/disk/resources/download", [ path = [ path ] ] )[ href ], [Headers = Headers]), 
+    type function 
+  )
+in
+  download
