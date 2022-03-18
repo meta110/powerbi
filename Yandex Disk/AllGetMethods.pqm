@@ -1,0 +1,318 @@
+let
+  // НАСТРОЙКИ API
+  // анти-спам задержка между последовательными запросами в секундах
+  DELAY = 0.5,
+
+  // название поля с данными
+  DATA_FIELD = "items",
+
+  // БИБЛИОТЕЧНЫЕ ФУНКЦИИ
+
+  // загрузчик функций из GitHub
+  Function.Library = ( name as text ) => 
+    Expression.Evaluate(
+      Text.FromBinary(
+        Binary.Buffer( 
+          Web.Contents( "https://raw.githubusercontent.com/meta110/powerbi/master/common/functions/", [
+            RelativePath = name & ".pqm"
+            ] )
+        ) 
+      ),
+      #shared
+    ),
+
+  // вставьте ссылку на функцию Value.ChangeType
+  Value.ChangeType = Function.Library( "Value.ChangeType" ),
+
+  // вставьте ссылку на функцию Table.ChangeType
+  Table.ChangeType = Function.Library( "Table.ChangeType" ),
+
+  // вставьте ссылку на функцию Function.ApplyDocumentation
+  Function.ApplyDocumentation = Function.Library( "Function.ApplyDocumentation" ),
+
+  // Web.Contents с задержкой
+  DelayWebContents =  Function.InvokeAfter( () => Web.Contents, #duration( 0, 0, 0, DELAY ) ),
+
+  // ЗАПРОС ДАННЫХ
+
+  // убедитесь, что в token находится ваш OAuth token из запроса авторизации
+  Headers = ( token ) => [ 
+    Authorization = "OAuth " & token,
+    Accept        = "application/json"
+  ],
+
+  // получает порцию данных
+  getPageProto = ( headers, url as text, optional commonQuery as record ) => let
+    commonQuery = commonQuery ?? [],
+    common = if limit = null then commonQuery else commonQuery & [ limit = Text.From( limit ) ]
+  in
+    ( optional offset as number ) => let
+      response = DelayWebContents(
+        "https://cloud-api.yandex.net", [
+          Headers = headers,
+          RelativePath = url,
+          Query = ( commonQuery ?? [] ) & ( if offset = null then [] else [ offset = Text.From( offset ) ] ),
+          ManualStatusHandling = { 400, 401, 403, 404, 406, 409, 429, 503 }
+        ]
+      ),
+      json = Json.Document( response ),
+      data = if Record.HasFields( json, DATA_FIELD ) then Record.Field( json, DATA_FIELD ) else json,
+      metadata = Record.RemoveFields( json, DATA_FIELD, MissingField.Ignore ),
+      errors = json[ error ]?
+    in 
+      if offset = -1 then {}
+      else if errors <> null then
+        error Error.Record( json[ error ], json[ message ], json[ description ] )
+      //else if json[ offset ]? = null then data
+      else data meta metadata,
+
+  // ПАГИНАЦИЯ
+
+  // находит и получает следующую страницу
+  // возвращает null, если страниц больше нет
+  getNextPageProto = ( getPage as function ) => ( previous ) => let
+    metadata = Value.Metadata( previous ),
+    offset = metadata[ offset ]? + metadata[ limit ]
+  in if metadata[ limit ]? = null or List.IsEmpty( previous ) then null else getPage( offset ?? -1 ),
+
+  // генерирует список всех страниц
+  paginate = ( method, params, token ) => let
+    getPage = getPageProto( Headers(token), method, params ),
+    getNextPage = getNextPageProto( getPage )
+  in List.Generate(
+    () => getPage( ),
+    ( page ) => page <> null,
+    ( page ) => getNextPage( page )
+  ),
+
+  DiskAPI = ( method as text, params as record, typeForResult as type, token ) => let
+
+    params = params ?? [],
+    //getPage = getPageProto( method, params, PAGE_SIZE ),
+    // собирает все строки в одну страницу
+    allPages = paginate( method, params, token ),
+    metadata = Value.Metadata( allPages{0} ),
+    tableType = Type.RecordFields(typeForResult)[items][Type],
+    rows = List.Combine( allPages ),
+
+    // ПРИВЕДЕНИЕ ДАННЫХ К ТАБЛИЧНОМУ ВИДУ
+    // генерирую таблицу из списка строк и объявляю тип колонок
+    result = if typeForResult = null then rows else Table.ChangeType( rows, tableType )
+  in //metadata,
+    if Record.HasFields( metadata, { "offset","limit" } ) then result else List.Single( allPages ),
+
+  // ГЕНЕРАЦИЯ ДОКУМЕНТАЦИИ ДЛЯ ФУНКЦИЙ
+
+  // вспомогательные функции
+
+  // генерирует тип значения из JSON,
+  // список записей считает таблицей
+  GenTypeFromJson = ( v as any ) as type =>
+    if Value.Is( v, type record ) then 
+      let
+        fValue = List.TransformMany( 
+          Record.FieldValues( v ), 
+          each {
+            if _ = null then type any
+            else if Value.Is( _, type list ) then @GenTypeFromJson( _ )
+            else Value.Type( _ )
+          },
+          ( a, b ) => [ Type = b, Optional = false ]
+        ),
+        asRecord = Record.FromList( fValue, Record.FieldNames( v ) )
+      in Type.ForRecord( asRecord, false )
+    else if Value.Is( v, type list) then 
+      let
+        firstValue = List.First( v )
+      in 
+        if Value.Is( firstValue, type record ) then 
+          type table @GenTypeFromJson( firstValue )
+        else type { Value.Type( firstValue ) }
+    else Value.Type( v ),
+
+  // применяет функцию ко всем полям записи
+  Record.Map = ( r as record, func as function ) => Record.FromList(
+    List.Transform(
+      Record.FieldValues( r ), func
+    ),
+    Record.FieldNames( r )
+  ),
+
+  // забираю документацию по API
+  // помещает ответ от API в значение типа binary
+  Source = Web.Contents( "https://cloud-api.yandex.net/v1/schema/resources/v1/disk/resources" ),
+  
+  // можно скачать ответ и сохранить в текстовое значение, чтобы не запрашивать каждый раз
+  // сейчас это не делаю
+  asText = Text.FromBinary(Source),
+
+  // парсит JSON из bianry и помещает его в запись
+  parsedJSON = Json.Document( Source ),
+
+  // генерирует тип данных по значениям JSON
+  genType = GenTypeFromJson( parsedJSON ),
+
+  result2 = Value.ChangeType( parsedJSON, genType, "en_US" ),
+  apis = result2[ apis ],
+
+  // ТИП ОТВЕТА
+  models = let 
+    t = Table.FromRecords(
+      Record.FieldValues( result2[ models ] ),
+      type table [ id = text, properties = record, required = list ]
+    ) 
+  in Record.FromList( t[ properties ], t[ id ] ),
+
+  types = [
+    string = type text ,
+    #"date-time" = type datetime,
+    int64 = Int64.Type,
+    boolean = type logical,
+    object = type text,
+    number = type number,
+    any = type any
+  ],
+
+  // поля примитивных типов
+  primitiveTypeModels = List.Select( Record.FieldNames( models ), each List.IsEmpty( List.Select( Record.FieldValues( Record.Field( models, _ ) ), each [#"$ref"]? <> null or [ type ]? = "array" ) ) ),
+  primitiveType = Record.SelectFields( models, primitiveTypeModels),
+  primitiveType3 = Record.Map(
+    primitiveType, 
+    each Type.ForRecord( 
+      Record.Map( _, each [ Type = Record.Field( types, [format]? ?? [type]? ?? "any" ), Optional = false ] ), 
+      false 
+    )
+  ),
+
+  // поля сложных типов
+  customTypeModels = List.Select( Record.FieldNames( models ), each not List.IsEmpty( List.Select( Record.FieldValues( Record.Field( models, _ ) ), each [#"$ref"]? <> null ) ) ),
+  customType = Record.SelectFields( models, customTypeModels ),
+  customType3 = Record.Map(
+    customType, 
+    each Type.ForRecord( 
+      Record.Map( 
+        Record.RemoveFields( _, {"_embedded"}, MissingField.Ignore ), 
+        each [ Type = Record.Field( types & primitiveType3, [format]? ?? [type]? ?? [#"$ref"]? ?? "any" ), Optional = false ] 
+      ), 
+      false 
+    )
+  ),
+
+  // табличные значения
+  arrayTypeModels = List.Select( Record.FieldNames( models ), each not List.IsEmpty( List.Select( Record.FieldValues( Record.Field( models, _ ) ), each [ type ]? = "array" ) ) ),
+  arrayType = Record.SelectFields( models, arrayTypeModels ),
+  arrayType3 = Record.Map(
+    arrayType, 
+    each Type.ForRecord( 
+      Record.Map( 
+        _, 
+        each let val = if [type]? = "array" then [items]? else _,
+          _type = Record.Field( types & primitiveType3 & customType3, val[format]? ?? val[type]? ?? val[#"$ref"]? ?? "any" )
+        in [ Type = if [type]? = "array" then try type table _type otherwise type {_type} else _type, Optional = false ]
+      ), 
+      false 
+    )
+  ),
+  //
+
+  // ТИП ЗАПРОСА
+
+  // автоматически преобразует любое значение в текстовое
+  transformToText = ( val as any ) => let v = Value.Type( val ) in
+    if v is list then Text.Combine( val, "," )
+    else if v is text or v is logical or v is number then Text.From( val )
+    else ( try Text.From( val ) otherwise error "unknown type transformation" ),
+
+
+  // Шаблон таблицы параметров
+  paramsTransformation = (parameters) => 
+    Table.FromRows(
+      Table.TransformRows( parameters, each let
+        _type = Record.Field( types, if [format]? <> null and [format]? <> "" then [format]? else [type]? ?? "any" )
+      in {
+        [name], //Name (text)
+        _type, //Type (type)
+        Logical.From([required]), //Required (logical)
+        transformToText, //Transformation (function)
+        null, //Default (any)
+        [name], //Caption (text)
+        [description], //Description (text)
+        null, //[enum], //Allowed (list)
+        null, //Sample (list)
+        null, //MultiLine (logical)
+        null //isCode (logical)
+      }
+    ), 
+    parametersTableType
+  ),
+  parametersTableType = type table [
+      Name = Text.Type,
+      Type = Type.Type,
+      Required = Logical.Type,
+      Transformation = Function.Type,
+      Default = Any.Type,
+      Caption = Text.Type,
+      Description = Text.Type,
+      Allowed = List.Type,
+      Sample = List.Type,
+      MultiLine = Logical.Type,
+      isCode = Logical.Type
+    ],
+
+  typeTransformation = ( _type ) =>
+    Record.Field( resultTypes, _type ),
+
+
+  resultTypes = arrayType3 & customType3 & primitiveType3,
+
+  test = apis,
+  #"Expanded operations" = Table.ExpandTableColumn(test, "operations", {"parameters", "format", "produces", "nickname", "notes", "consumes", "responseMessages", "summary", "type", "method"}, {"parameters", "format", "produces", "nickname", "notes", "consumes", "responseMessages", "summary", "type", "method"}),
+  #"Filtered Rows" = Table.SelectRows(#"Expanded operations", each ([method] = "GET")),
+  transform = Table.TransformColumns( #"Filtered Rows", {
+    { "parameters", paramsTransformation, parametersTableType },
+    { "type", typeTransformation, type type }
+  }),
+  //addFunction = Table.AddColumn( transform, "function", each ()=>Function.ApplyDocumentation(func([path],[type]),[parameters],null,[nickname],[summary]), type function ),
+    
+  selector = #table( parametersTableType, {
+    {
+      "token", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Токен", //Caption (text)
+      "Получите по ссылке", //Description (text)
+      null, ////Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    },
+    {
+      "method", //Name (text)
+      type text, //Type (type)
+      null, //Required (logical)
+      null, //Transformation (function)
+      null, //Default (any)
+      "Метод API", //Caption (text)
+      "Выберите нужный метод из списка", //Description (text)
+      transform[ summary ], ////Allowed (list)
+      null, //Sample (list)
+      null, //MultiLine (logical)
+      null //isCode (logical)
+    }
+  }),
+
+
+  // СЕЛЕКТОР МЕТОДОВ
+  func = ( path, _type, token ) => ( params ) => DiskAPI( path, params, _type, token ),
+  main = ( params ) => 
+    if params = [] then error "Получите OAuth токен на Яндекс Полигоне https://yandex.ru/dev/disk/poligon/"
+    else let
+      option = Table.SingleRow( Table.SelectRows( transform, each [summary] = params[method]) )
+    in Function.ApplyDocumentation(func(option[path],option[type],params[token]),option[parameters],null,option[nickname],option[summary]),
+    
+  columns = Function.ApplyDocumentation(main,selector,null,"Яндекс Диск REST API","Создает функцию для работы с выбранным методом API")
+
+in
+  columns
