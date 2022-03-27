@@ -267,7 +267,7 @@ let
 
   test = apis,
   #"Expanded operations" = Table.ExpandTableColumn(test, "operations", {"parameters", "format", "produces", "nickname", "notes", "consumes", "responseMessages", "summary", "type", "method"}, {"parameters", "format", "produces", "nickname", "notes", "consumes", "responseMessages", "summary", "type", "method"}),
-  #"Filtered Rows" = Table.SelectRows(#"Expanded operations", each ([method] = "GET")),
+  #"Filtered Rows" = Table.SelectRows(#"Expanded operations", each ([method] = "GET") and ([nickname] <> "GetLastUploadedFilesList" and [nickname] <> "GetResourceUploadLink")),
   transform = Table.TransformColumns( #"Filtered Rows", {
     { "parameters", paramsTransformation, parametersTableType },
     { "type", typeTransformation, type type }
