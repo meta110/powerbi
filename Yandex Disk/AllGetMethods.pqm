@@ -152,7 +152,7 @@ let
   // генерирует тип данных по значениям JSON
   genType = GenTypeFromJson( parsedJSON ),
 
-  result2 = Value.ChangeType( parsedJSON, genType, "en_US" ),
+  result2 = Value.ChangeType( parsedJSON, genType, "en-US" ),
   apis = result2[ apis ],
 
   // ТИП ОТВЕТА
