@@ -1,5 +1,6 @@
 // коннектор к обычному (традиционному) API Яндекс Метрики https://yandex.ru/dev/metrika/doc/api2/api_v1/intro-docpage/
 let
+    delay = 0.05, // задержка между последовательными запросами в секундах https://yandex.ru/dev/metrika/doc/api2/intro/quotas.html
     Source = (
         optional date_start as date, // дата начала интервала, если не задана, будет 7 дней назад
         optional date_end as date, // дата окончания интервала, если не задана, то будет вчера
@@ -74,12 +75,12 @@ let
         all_results = List.Generate(
             ()=>[
                 offset = limit + 1, // пропускаю данные, которые уже есть в пробном запросе
-                chunk = Json.Document(Source(offset)) // получаю свежие
+                chunk = Function.InvokeAfter( () => Json.Document(Source(offset)), #duration(0,0,0,delay) ) // получаю свежие
             ],
             each [offset] < total, // проверяю, что не дошел до последней страницы пагинации
             each [
                 offset = [offset] + limit, // увеличиваю страницу
-                chunk = Json.Document(Source(offset)) // получаю данные с новой страницы
+                chunk = Function.InvokeAfter( () => Json.Document(Source(offset)), #duration(0,0,0,delay) ) // получаю данные с новой страницы
             ]
             , each [chunk] // возвращаю только данные
         ),
