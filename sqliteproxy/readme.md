@@ -25,5 +25,5 @@ RaiseError | - | Возбуждать ошибку при несоответст
 Указанные ключевые колонки отсутствуют в таблице | Вы указали ключевые колонки, которых нет в переданной вами таблице. Проверьте правильно ли указали колонки и сами данные
 
 ## Полезные ссылки для работы с SQLite
-- SQLite Studio: https://sqlitestudio.pl/
-- SQLite ODBC Driver: http://www.ch-werner.de/sqliteodbc/
+- [SQLite Studio](https://sqlitestudio.pl/)
+- [SQLite ODBC Driver](http://www.ch-werner.de/sqliteodbc/)
