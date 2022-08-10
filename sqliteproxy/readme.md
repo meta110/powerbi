@@ -1,11 +1,11 @@
 Прозрачный буфер таблицы Power Query в локальной БД SQLite с возможностью изменения существующих и дозагрузки новых данных: вы бесплатно получаете инкрементальное обновление на своем Power BI Desktop:
 - база SQLite - это единственный файл с любым понятным вам названием и расширением, который можно синхронизировать с другими устройствами с помощью Яндекс диска, Google Drive и т.п.
-- для прямого подключения к базе SQLite можно использовать, например, <code>[SQLite ODBC Driver](http://www.ch-werner.de/sqliteodbc/)</code> или этот скрипт
+- для прямого подключения к базе SQLite можно использовать, например, [SQLite ODBC Driver](http://www.ch-werner.de/sqliteodbc/) или скрипт, о котором сейчас идет речь
 
 ## Начало работы
 1. Скачайте и установите python версии 3.x, если он у вас еще не установлен
 1. В настройках Power BI проверьте ссылку на питон File > Options and settings > Options > Python scripting: Detected Python home directories
-1. Скопируйте исходный код скрипта https://github.com/meta110/powerbi/blob/master/sqliteproxy/pbi2sqlite.m и вставьте его в пустой запрос
+1. Скопируйте [исходный код скрипта](https://raw.githubusercontent.com/meta110/powerbi/master/sqliteproxy/pbi2sqlite.m) и вставьте его в пустой запрос
 
 Аргумент | Обязательный | Описание
 ---|---|---
