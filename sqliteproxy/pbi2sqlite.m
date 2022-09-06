@@ -88,7 +88,7 @@ cache = (
         each Record.Field( asRecord, [TypeName] ), recordType ),
     #"Expanded Values" = Table.ExpandRecordColumn(#"Added Custom1", "Values", {"Revert", "Type"}, {"Revert", "Type"}),
     #"Removed Columns" = Table.RemoveColumns(#"Expanded Values",{"Value", "TypeName", "Position"}),
-    fix_empty = Table.TransformColumns( #"Removed Columns", { "Revert", each (t) => if ( t = null or t = "" ) then t else _(t) } ),
+    fix_empty = Table.TransformColumns( #"Removed Columns", { "Revert", each (t) => if ( t = null or t = "" ) then null else _(t) } ),
     transformations = Table.ToRows( fix_empty ),
     
     // Преобразование загруженной таблицы к исходному виду
