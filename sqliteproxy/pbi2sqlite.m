@@ -12,6 +12,7 @@ let
         { "Text.Type",      Text.Type,      "TEXT",   each _,         each _ },
         { "Duration.Type",  Duration.Type,  "TEXT",   Text.From,      Duration.From },
         { "Currency.Type",  Currency.Type,  "REAL",   Number.From,    each Currency.From( _, LOCALE ) },
+        { "Number.Type",    Number.Type,    "REAL",   Number.From,    each Number.From( _, LOCALE ) },
         { "List.Type",      List.Type,      "TEXT",   Value.ToText,   Json.Document },
         { "Any.Type",       Text.Type,      "TEXT",   each _,         each _}
         } ),
