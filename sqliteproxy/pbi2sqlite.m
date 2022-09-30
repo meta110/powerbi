@@ -9,6 +9,7 @@ let
         { "Percentage.Type",Percentage.Type,"REAL",   Number.From,    each Percentage.From( _, LOCALE ) },
         { "Int64.Type",     Int64.Type,     "INTEGER",Int64.From,     each Int64.From( _, LOCALE ) },
         { "Date.Type",      Date.Type,      "INTEGER",DateTime2Timestamp, each Date.From( Timestamp2DateTimeZone( _ ) ) },
+        { "DateTime.Type",  DateTime.Type,  "INTEGER",DateTime2Timestamp, each DateTime.From( Timestamp2DateTimeZone( _ ) ) },
         { "Text.Type",      Text.Type,      "TEXT",   each _,         each _ },
         { "Duration.Type",  Duration.Type,  "TEXT",   Text.From,      Duration.From },
         { "Currency.Type",  Currency.Type,  "REAL",   Number.From,    each Currency.From( _, LOCALE ) },
