@@ -66,8 +66,12 @@ cache = (
             {"Name"} 
         ), false ),
     
+    // строки с ошибками
+    errRows = Table.SelectRowsWithErrors( Table.AddIndexColumn( Data, "Indx", 1 ) ),
+
     // Подготовка схемы таблицы
     Source = Table.Schema( Data ),
+
     #"Added Custom" = Table.AddColumn(Source, "SQLType", 
         each Record.Field( asRecord, [TypeName] ), recordType ),
     #"Expanded SQLType" = Table.ExpandRecordColumn(#"Added Custom", "SQLType", {"Value", "Transform"}, {"Value", "Transform"}),
@@ -105,6 +109,7 @@ cache = (
         if Data <> null and KeyColumns = null then error "Укажите ключевые колонки"
         else if Data <> null and not List.ContainsAll( Table.ColumnNames( Data ), KeyColumns ) 
             then error "Названия ключевых колонок должны совпадать с колонками таблицы"
+        else if Data <> null and not Table.IsEmpty( errRows ) then error "Устраните ошибки в исходной таблице. Номера строк, содержащих ошибки: " & Text.Combine( List.Transform( errRows[Indx], Text.From ), "," )
         else return meta ( config ) //*/
 in
     cache
