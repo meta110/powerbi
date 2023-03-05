@@ -5,7 +5,7 @@
 - автоматически создавайте функции для взаимодействия с пользователем
 
 ## Пример работы
-Скопируйте [пример настройки для работы с API](https://github.com/meta110/powerbi/blob/master/API-constructor/example.m "пример настройки для работы с API"). В примере реализованы следующие методы API:
+Скопируйте [пример настройки для работы с API](https://github.com/meta110/powerbi/blob/master/API-constructor/example.m "пример настройки для работы с API"). В примере в рамках одной функции реализованы следующие методы API:
 - получение [списка файлов на вашем Яндекс Диске](https://dev.yandex.net/disk-polygon/?lang=ru&tld=ru#!/v147disk47resources/GetFlatFilesList "списка файлов на вашем Яндекс Диске") (с пагинацией)
 - получение [метаданных файла или каталога](https://dev.yandex.net/disk-polygon/?lang=ru&tld=ru#!/v147disk47resources/GetResource "метаданных файла или каталога") на Яндекс Диске
 - получение [информации о домене](https://whoisjson.com/documentation "информации о домене") с помощью сервиса WhoisJSON
