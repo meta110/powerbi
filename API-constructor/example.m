@@ -1,7 +1,7 @@
 let
     token_yandex = token_yandex, // получите бесплатный токен здесь https://yandex.ru/dev/disk/poligon/
     token_whois = token_whois,  // получите бесплатный токен здесь https://whoisjson.com/
-    API = api2pbi, // ссылка на функцию-генератор
+    API = api2pbi, // ссылка на запрос с функцией, скопированной из файла https://github.com/meta110/powerbi/blob/master/API-constructor/api2pbi.m
 
     // https://yandex.ru/dev/disk/poligon/
     args = {
