@@ -20,6 +20,11 @@
 
 Пример структуры аргумента:
 ```
+    { { method meta method_meta } }
+```
+
+ещё пример посложнее:
+```
     {
     	{
     		groupA_method1 meta private_methodA1_meta,
