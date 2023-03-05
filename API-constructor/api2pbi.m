@@ -1,6 +1,6 @@
 // генератор функций для работы с методами API
 // новая версия здесь: https://github.com/meta110/powerbi/blob/master/API-constructor/api2pbi.m
-// документация здесь: 
+// документация здесь: https://github.com/meta110/powerbi/tree/master/API-constructor
 each
 let
     args = _,
