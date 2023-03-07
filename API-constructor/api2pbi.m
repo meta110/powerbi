@@ -318,11 +318,12 @@ let
         pagination = Record.Merge({ metadata[pagination][offsetField]?, back2Record }), 
         // статусы ответа (делаю здесь один раз, чтобы потом не повторять в цикле)
         responseStatuses = allParams{[#"0" = "ManualStatusHandling"] }?,
+        generalStatus = List.Last( Record.FieldValues( Value.Metadata( responseStatuses[Value] ) ) ),
         statuses = 
             if responseStatuses <> null
             then Table.FromRows( 
                 List.Transform( responseStatuses[Value], 
-                    each { _, List.Last( Record.FieldValues( Value.Metadata( _ ) ) ) } 
+                    each { _, List.Last( Record.FieldValues( Value.Metadata( _ ) ) ) ?? generalStatus } 
                 ) 
             )
             else null,
@@ -428,7 +429,7 @@ let
             else error Text.Format( "Неизвестный Content-Type: #[content]", [ content = contentType ] ),
         result =  
             if status = 200 then extract
-            else if statuses <> null and status <> null and statusInfo <> null then statusInfo( buffer )
+            else if statuses <> null and status <> null and statusInfo <> null and Value.Is( statusInfo, type function ) then statusInfo( buffer )
             else error Text.Format("Статус ответа: #[status]", [ status = status ])
         in  result meta metadata,
     
