@@ -6,8 +6,9 @@ let
     args = _,
 
 
-    // форматирует документацию для параметра 
-    // можно сразу писать как надо, но с ней вроде бы короче
+    // эта функция форматирует документацию для параметра
+    // здесь она не используется, ее можно скопировать и вставить туда, 
+    // где подготавливаются параметры
     argSep = ",|",
     argMeta = ( 
         t as type, // 1
@@ -102,7 +103,11 @@ let
         ) ),
         // названия методов
         methods = Table.AddColumn( pagination, "Name", each [Meta][Name]? )
-    in  methods,
+    in  if Value.Is( args, type list ) 
+            and List.AllTrue( List.Transform( args, each Value.Is( _, type list ) 
+                and List.AllTrue( List.Transform( _, each Value.Is( _, type record ) ) ) ) )
+        then methods
+        else error "Аргументы должны быть переданы списком списков записей: {{ [], [], ... },{[],..},...}",
 
     // комбинирует записи любой вложенности
     // чем позже запись в списке, тем выше приоритет значения поля
