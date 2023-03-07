@@ -288,7 +288,7 @@ let
                     Documentation.AllowedValues = methods[Name] 
                 ]
             ]
-        ], 0 ) meta [ Documentation.Name = "Выберите метод", Documentation.Description = "Функция, реализующая работу с выбранным методом, будет сгенерирована автоматически" ],
+        ], 1 ) meta [ Documentation.Name = "Выберите метод", Documentation.Description = "Функция, реализующая работу с выбранным методом, будет сгенерирована автоматически" ],
         // прототип функции
         prototype = each let v = methods{ [ Name = _{0}? ] }? 
             in  if _ = null or v = null then error "Выбран несуществующий метод"
