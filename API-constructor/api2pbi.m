@@ -197,6 +197,7 @@ let
         // show must go on
         result = 
             if Table.IsEmpty( template ) then null
+            else if Table.IsEmpty( instance ) then "отсутствуют метаданные"
             else if not Table.HasColumns( instance, level ) then
                 if Table.IsEmpty( requiredFields ) then null
                 else "отсутствуют обязательные поля: " & details( checkRequired, level )
@@ -285,7 +286,8 @@ let
             Parameters = [ 
                 method = type nullable text meta [ 
                     Documentation.FieldCaption = "Метод", 
-                    Documentation.AllowedValues = methods[Name] 
+                    Documentation.AllowedValues = methods[Name],
+                    Documentation.FieldDescription = "расширенное описание параметра"
                 ]
             ]
         ], 1 ) meta [ Documentation.Name = "Выберите метод", Documentation.Description = "Функция, реализующая работу с выбранным методом, будет сгенерирована автоматически" ],
