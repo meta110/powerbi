@@ -1,6 +1,7 @@
 let
     VK_API_VERSION = "5.131",
     VK_TOKEN = #"Вконтакте Токен", /// не забудьте добавить!
+    API = //// ссылка на функцию-конструктор https://github.com/meta110/powerbi/blob/master/API-constructor/api2pbi.m
     
     ///// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ
     // форматирует документацию для параметра 
