@@ -346,7 +346,7 @@ let
         allPages = getAllPages( getPage, getNextPage( getPage, metadata[pagination]?[delay]? ) ),
         // комбинирую, если есть что комбинировать
         combinePages = if metadata[paginate]? = true
-            then List.Combine( allPages )
+            then List.Combine( allPages ) meta Value.Metadata(allPages{0}?)
             else api( metadata, back2Record, statuses )
     in  //allParams/*
         if metadata[debug]? <> null then // если надо дебажить
