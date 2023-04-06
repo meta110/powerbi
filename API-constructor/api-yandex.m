@@ -153,8 +153,7 @@ let
                 metrics = argMeta( type {text}, "Метрики списком или через запятую, не более 20",null,"ym:s:visits,ym:s:pageviews,ym:s:users"),
                 accuracy = 1, //argMeta( type number, "Точность", null, 1 ),
                 date1 = argMeta( type date, "Дата начала интервала", null, Date.From( DateTime.LocalNow() - Duration.From(7) )),
-                date2 = argMeta( type date, "Дата окончания интервала", null, Date.From( DateTime.LocalNow() )),
-                limit = 5
+                date2 = argMeta( type date, "Дата окончания интервала", null, Date.From( DateTime.LocalNow() ))
             ]
         ] meta [ 
             Name = "Метрика: Отчёт таблица",
